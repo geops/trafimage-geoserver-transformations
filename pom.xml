@@ -2,7 +2,6 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.geoserver.trafimage.transform</groupId>
-	<artifactId>aggregate-feature</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
   <description>Geoserver rendering transformation for feature aggregation. See #14080071</description>
   
@@ -49,9 +48,17 @@
       <scope>test</scope>
      </dependency>
     </dependencies>
-    <name>aggregate-feature</name>
+    <name>trafimage-geoserver-transformations</name>
     <url>http://tickets.trafimage.geops.ch/issues/14080071</url>
     <issueManagement>
     	<url>http://tickets.trafimage.geops.ch/issues/14080071</url>
     </issueManagement>
+    <artifactId>trafimage-geoserver-transformations</artifactId>
+    <scm>
+    	<url>https://webgit.geops.de/trafimage-geoserver-transformations.git</url>
+    </scm>
+    <organization>
+    	<name>geOps</name>
+    	<url>http://www.geops.de</url>
+    </organization>
 </project>
