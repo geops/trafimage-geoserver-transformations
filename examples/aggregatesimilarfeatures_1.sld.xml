@@ -11,34 +11,46 @@ xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XML
       <FeatureTypeStyle>
         <Transformation>
           <ogc:Function name="gs:AggregateSimilarFeatures">
+
+            <!-- 
+                 the ingoing features
+            -->
             <ogc:Function name="parameter">
               <ogc:Literal>collection</ogc:Literal>
             </ogc:Function>
+
+            <!-- 
+                 attributes to group by. will be ignored if they are not part of the
+                 featuretype.
+                 grouped attributes will be present in the aggregeted features
+            -->
             <ogc:Function name="parameter">
               <ogc:Literal>attributes</ogc:Literal>
               <ogc:Literal>klasse</ogc:Literal>
             </ogc:Function>
             
+            <!-- 
+                 the env-function allows access of the WMS url parameters
+            -->
             <ogc:Function name="parameter">
               <ogc:Literal>outputBBOX</ogc:Literal>
               <ogc:Function name="env">
                 <ogc:Literal>wms_bbox</ogc:Literal>
               </ogc:Function>
             </ogc:Function>
-            
             <ogc:Function name="parameter">
               <ogc:Literal>outputWidth</ogc:Literal>
               <ogc:Function name="env">
                 <ogc:Literal>wms_width</ogc:Literal>
               </ogc:Function>
             </ogc:Function>
-        
             <ogc:Function name="parameter">
               <ogc:Literal>outputHeight</ogc:Literal>
               <ogc:Function name="env">
                 <ogc:Literal>wms_height</ogc:Literal>
               </ogc:Function>
             </ogc:Function>
+
           </ogc:Function>
         </Transformation>
         <Rule>
