@@ -18,23 +18,22 @@ class SimpleFeatureHasher {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public void addIncludedAttribute(String attributeName) {
+	public void addIncludedAttribute(final String attributeName) {
 		this.includedAttributes.add(attributeName);
 	}
 	
-	private String byteArrayToHexString(byte[] b) {
+	private String byteArrayToHexString(final byte[] b) {
 		String result = "";
 		for (int i=0; i < b.length; i++) {
-			result +=
-					Integer.toString( ( b[i] & 0xff ) + 0x100, 16).substring( 1 );
+			result += Integer.toString( ( b[i] & 0xff ) + 0x100, 16).substring( 1 );
 		}
 		return result;
 	}
 	
-	public String getHash(SimpleFeature feature) throws NoSuchAlgorithmException {
+	public String getHash(final SimpleFeature feature) throws NoSuchAlgorithmException {
 		final MessageDigest md = MessageDigest.getInstance("SHA-1");
 		if (this.includeGeometry) {
-			Geometry geom = (Geometry) feature.getDefaultGeometry();
+			final Geometry geom = (Geometry) feature.getDefaultGeometry();
 			if (geom != null) {
 				md.update(geom.toText().getBytes());
 			}
@@ -56,7 +55,7 @@ class SimpleFeatureHasher {
 		return this.includedAttributes;
 	}
 	
-	public void setIncludedAttributes(HashSet<String> attributeNames) {
+	public void setIncludedAttributes(final HashSet<String> attributeNames) {
 		this.includedAttributes = attributeNames;
 	}
 
