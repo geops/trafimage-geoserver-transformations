@@ -1,1 +1,9 @@
 Geoserver rendering transformation for feature aggregation. See #14080071
+
+# Examples
+
+For the SLD code for all exmpales see the examples directory.
+
+## AggregateSimilarFeatures:
+
+![aggregatesimilarfeatures_1.png](examples/aggregatesimilarfeatures_1.png)
