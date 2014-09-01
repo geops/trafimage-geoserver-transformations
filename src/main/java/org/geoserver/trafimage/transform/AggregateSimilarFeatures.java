@@ -8,19 +8,16 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 import org.geoserver.wps.gs.GeoServerProcess;
-
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.process.ProcessException;
 import org.geotools.process.factory.DescribeParameter;
 import org.geotools.process.factory.DescribeProcess;
 import org.geotools.process.factory.DescribeResult;
 import org.geotools.util.logging.Logging;
-
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -55,7 +52,7 @@ public class AggregateSimilarFeatures implements GeoServerProcess  {
 	 * @param attributesSet
 	 * @return
 	 */
-	protected SimpleFeatureType buildOutputFeatureType(final SimpleFeatureType inputSchema, final HashSet<String> attributesSet) {
+	protected SimpleFeatureType buildOutputFeatureType(final SimpleFeatureType inputSchema, final HashSet<String> attributesSet, final String aggregateAttributeName) {
 		
 		final SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
 		typeBuilder.setName("aggregate");
@@ -73,10 +70,10 @@ public class AggregateSimilarFeatures implements GeoServerProcess  {
 			LOGGER.finer("Adding attribute "+attributeName+" to new SimpleFeatureType");
 			typeBuilder.add(attributeName, descriptor.getType().getClass());
 		}
-		LOGGER.finer("Adding attribute "+AGG_COUNT_ATTRIBUTE_NAME+" to new SimpleFeatureType");
+		LOGGER.finer("Adding attribute "+aggregateAttributeName+" to new SimpleFeatureType");
 		
 		// column to store the counts
-		typeBuilder.add(AGG_COUNT_ATTRIBUTE_NAME, Integer.class);
+		typeBuilder.add(aggregateAttributeName, Integer.class);
 		
 		return typeBuilder.buildFeatureType();
 	}
@@ -86,9 +83,6 @@ public class AggregateSimilarFeatures implements GeoServerProcess  {
 	 * 
 	 * @param collection
 	 * @param attributes
-	 * @param outputEnv
-	 * @param outputWidth
-	 * @param outputHeight
 	 * @param monitor
 	 * @return
 	 * @throws ProcessException
@@ -100,21 +94,27 @@ public class AggregateSimilarFeatures implements GeoServerProcess  {
 			
 			// processing parameters
 			@DescribeParameter(name = "attributes", description = "Comma-seperated string of attributes to include in the aggregation") String attributes,
-			
-			 // output image parameters
-			@DescribeParameter(name = "outputBBOX", description = "Bounding box for target image extent") ReferencedEnvelope outputEnv,
-			@DescribeParameter(name = "outputWidth", description = "Target image width in pixels", minValue = 1) Integer outputWidth,
-			@DescribeParameter(name = "outputHeight", description = "Target image height in pixels", minValue = 1) Integer outputHeight,
 
 			ProgressListener monitor
 			) throws ProcessException {
 			
+		return aggregate(collection, this.splitAt(attributes, ","), AGG_COUNT_ATTRIBUTE_NAME);
+	}
+	
+	
+	/**
+	 * 
+	 * @param collection
+	 * @param arrayList
+	 * @return
+	 */
+	protected SimpleFeatureCollection aggregate(final SimpleFeatureCollection collection, final ArrayList<String> arrayList, final String aggregateAttributeName) {
 		final SimpleFeatureType inputSchema = collection.getSchema();
 		final SimpleFeatureHasher hasher = new SimpleFeatureHasher();
 		hasher.setIncludeGeometry(true);
 		
 		// process the attributes string into a set to eliminate duplicates
-		for (final String attributeName: this.splitAt(attributes, ",")) {
+		for (final String attributeName: arrayList) {
 			if (inputSchema.getDescriptor(attributeName) != null) {
 				hasher.addIncludedAttribute(attributeName);
 			}
@@ -122,7 +122,7 @@ public class AggregateSimilarFeatures implements GeoServerProcess  {
 
 		// build the new featuretype for the output geometries
 		final HashSet<String> attributesSet = hasher.getIncludedAttributes();
-		final SimpleFeatureType outputSchema = this.buildOutputFeatureType(inputSchema, attributesSet);
+		final SimpleFeatureType outputSchema = this.buildOutputFeatureType(inputSchema, attributesSet, aggregateAttributeName);
 		
 		// aggregate the features
 		final SimpleFeatureIterator featureIt = collection.features();
@@ -150,14 +150,14 @@ public class AggregateSimilarFeatures implements GeoServerProcess  {
 					final Object attributeValue = feature.getAttribute(attributeName);
 					featureBuilder.set(attributeName, attributeValue);
 				}
-				featureBuilder.set(AGG_COUNT_ATTRIBUTE_NAME, 0);
+				featureBuilder.set(aggregateAttributeName, 0);
 				final SimpleFeature outputFeature = featureBuilder.buildFeature(feature.getID());
 				featureMap.put(hash, outputFeature);
 			}
 			
 			final SimpleFeature outputFeature = featureMap.get(hash);
-			outputFeature.setAttribute(AGG_COUNT_ATTRIBUTE_NAME, 
-					(Integer)outputFeature.getAttribute(AGG_COUNT_ATTRIBUTE_NAME) + 1);
+			outputFeature.setAttribute(aggregateAttributeName, 
+					(Integer)outputFeature.getAttribute(aggregateAttributeName) + 1);
 		}
 		
 		// build the result collection
