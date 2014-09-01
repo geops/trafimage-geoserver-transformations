@@ -56,36 +56,40 @@ public class SimpleFeatureAggregator {
 		final SimpleFeatureIterator featureIt = collection.features();
 		final HashMap<String, SimpleFeature> featureMap = new HashMap<String,SimpleFeature>();
 		
-		while (featureIt.hasNext()) {
-			final SimpleFeature feature = featureIt.next();
-			String hash = null;
-			try {
-				hash = hasher.getHash(feature);
-			} catch (NoSuchAlgorithmException e) {
-				throw new ProcessException(e);
-			}
-			
-			if (!featureMap.containsKey(hash)) {
-				final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
-				
-				// idx =0 is always the geometry. same order as during the creation of the SimpleFeatureBuilder
-				final Object geometry = feature.getDefaultGeometry();
-				featureBuilder.set(0, geometry);
-				
-				final Iterator<String> attributesSetIt2 = attributesSet.iterator();
-				while(attributesSetIt2.hasNext()) {
-					final String attributeName =  attributesSetIt2.next();
-					final Object attributeValue = feature.getAttribute(attributeName);
-					featureBuilder.set(attributeName, attributeValue);
+		try {
+			while (featureIt.hasNext()) {
+				final SimpleFeature feature = featureIt.next();
+				String hash = null;
+				try {
+					hash = hasher.getHash(feature);
+				} catch (NoSuchAlgorithmException e) {
+					throw new ProcessException(e);
 				}
-				featureBuilder.set(aggregateAttributeName, 0);
-				final SimpleFeature outputFeature = featureBuilder.buildFeature(feature.getID());
-				featureMap.put(hash, outputFeature);
+				
+				if (!featureMap.containsKey(hash)) {
+					final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
+					
+					// idx =0 is always the geometry. same order as during the creation of the SimpleFeatureBuilder
+					final Object geometry = feature.getDefaultGeometry();
+					featureBuilder.set(0, geometry);
+					
+					final Iterator<String> attributesSetIt2 = attributesSet.iterator();
+					while(attributesSetIt2.hasNext()) {
+						final String attributeName =  attributesSetIt2.next();
+						final Object attributeValue = feature.getAttribute(attributeName);
+						featureBuilder.set(attributeName, attributeValue);
+					}
+					featureBuilder.set(aggregateAttributeName, 0);
+					final SimpleFeature outputFeature = featureBuilder.buildFeature(feature.getID());
+					featureMap.put(hash, outputFeature);
+				}
+				
+				final SimpleFeature outputFeature = featureMap.get(hash);
+				outputFeature.setAttribute(aggregateAttributeName, 
+						(Integer)outputFeature.getAttribute(aggregateAttributeName) + 1);
 			}
-			
-			final SimpleFeature outputFeature = featureMap.get(hash);
-			outputFeature.setAttribute(aggregateAttributeName, 
-					(Integer)outputFeature.getAttribute(aggregateAttributeName) + 1);
+		} finally {
+			featureIt.close(); // closes the underlying database query, ...  
 		}
 		
 		// build the result collection
