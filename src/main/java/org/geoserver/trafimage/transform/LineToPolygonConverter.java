@@ -76,10 +76,12 @@ class LineToPolygonConverter {
 	 * @return
 	 */
 	private Coordinate[] buildOffsettedLine(final LineString line, final double lineOffset) {
-		// source for the curvebuilder is at 
-		// http://sourceforge.net/p/jts-topo-suite/code/HEAD/tree/trunk/jts/java/src/com/vividsolutions/jts/operation/buffer/OffsetCurveBuilder.java#l142
+		/*
+		 * The source for the curvebuilder is at 
+		 * http://sourceforge.net/p/jts-topo-suite/code/HEAD/tree/trunk/jts/java/src/com/vividsolutions/jts/operation/buffer/OffsetCurveBuilder.java#l142
+		 */
 		if (lineOffset == 0.0) {
-			// JTS will return null in this case
+			// JTS OffsetCurveBuilder will return null in this case
 			return line.getCoordinates();
 		}
 		final Coordinate[] result = this.curveBuilder.getOffsetCurve(line.getCoordinates(), lineOffset);
@@ -101,8 +103,8 @@ class LineToPolygonConverter {
 		final double offset2 = this.offset+this.width;
 		
 		// create the two lines for the sides of the polygon
-		final Coordinate[] cLine1 = this.buildOffsettedLine(line, offset1); // TODO
-		final Coordinate[] cLine2 = this.buildOffsettedLine(line, offset2); // TODO
+		final Coordinate[] cLine1 = this.buildOffsettedLine(line, offset1);
+		final Coordinate[] cLine2 = this.buildOffsettedLine(line, offset2);
 
 		// use the two lines to build an polygon and close the open ends
 		final Coordinate[] cPolygon = new Coordinate[cLine1.length+cLine2.length+1];
@@ -114,12 +116,9 @@ class LineToPolygonConverter {
 		}
 		cPolygon[cLine1.length+cLine2.length] = cLine1[0]; // close the polygon
 		
-		
 		GeometryFactory geomFactory = new GeometryFactory(line.getPrecisionModel(), line.getSRID());
 		LinearRing linearRing = geomFactory.createLinearRing(cPolygon);
-		String lrText = linearRing.toText();
 		Polygon polygon = geomFactory.createPolygon(linearRing);
-		String plyText = polygon.toText();
 		return polygon;
 		
 	}

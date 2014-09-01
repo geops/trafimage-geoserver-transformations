@@ -138,8 +138,8 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 				final int widthPx = this.parseAttributeToInteger(aggLine, widthAttributeName, 4);
 				final int offsetPx = this.parseAttributeToInteger(aggLine, offsetAttributeName, 0);
 				
-				lineToPolygon.setWidth(MapUnits.pixelToMapUnits(outputEnv, outputWidth, outputHeight, widthPx));
-				lineToPolygon.setOffset(MapUnits.pixelToMapUnits(outputEnv, outputWidth, outputHeight, offsetPx));
+				lineToPolygon.setWidth(MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, widthPx));
+				lineToPolygon.setOffset(MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, offsetPx));
 				
 				// the geometry is field number 0. see buildPolygonFeatureType
 				Object lineGeometry = aggLine.getDefaultGeometry();

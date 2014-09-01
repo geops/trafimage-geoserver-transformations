@@ -59,8 +59,8 @@ class SimpleFeatureHasher {
 		this.includedAttributes = attributeNames;
 	}
 
-	public void setIncludeGeometry(boolean ig) {
-		this.includeGeometry = ig;
+	public void setIncludeGeometry(boolean includeGeometry) {
+		this.includeGeometry = includeGeometry;
 	}
 
 }
