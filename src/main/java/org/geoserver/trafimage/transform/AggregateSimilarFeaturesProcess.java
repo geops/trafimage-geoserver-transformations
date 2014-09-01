@@ -21,7 +21,7 @@ import org.opengis.util.ProgressListener;
 				+ " additional column 'agg_count' holding the number of features in the aggregation")
 public class AggregateSimilarFeaturesProcess implements GeoServerProcess  {
 
-	protected static final String AGG_COUNT_ATTRIBUTE_NAME = "agg_count";
+	private static final String AGG_COUNT_ATTRIBUTE_NAME = "agg_count";
 	
 	public AggregateSimilarFeaturesProcess() {
 		// TODO Auto-generated constructor stub

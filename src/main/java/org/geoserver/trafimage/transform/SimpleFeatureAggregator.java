@@ -21,7 +21,7 @@ import org.opengis.feature.type.GeometryDescriptor;
 
 public class SimpleFeatureAggregator {
 
-	protected ArrayList<String> aggregationColumns;
+	private ArrayList<String> aggregationColumns;
 	
 	private static final Logger LOGGER = Logging.getLogger(SimpleFeatureAggregator.class);
 	
@@ -55,6 +55,7 @@ public class SimpleFeatureAggregator {
 		// aggregate the features
 		final SimpleFeatureIterator featureIt = collection.features();
 		final HashMap<String, SimpleFeature> featureMap = new HashMap<String,SimpleFeature>();
+		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
 		
 		try {
 			while (featureIt.hasNext()) {
@@ -67,8 +68,6 @@ public class SimpleFeatureAggregator {
 				}
 				
 				if (!featureMap.containsKey(hash)) {
-					final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
-					
 					// idx =0 is always the geometry. same order as during the creation of the SimpleFeatureBuilder
 					final Object geometry = feature.getDefaultGeometry();
 					featureBuilder.set(0, geometry);

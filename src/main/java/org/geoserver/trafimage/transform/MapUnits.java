@@ -14,8 +14,8 @@ public class MapUnits {
 	 */
 	static double pixelToMapUnits(final ReferencedEnvelope bbox, final int imageWidth, final int imageHeight, final int pixelToConvert) {
 		
-		final double pixelPerMuX = imageWidth / (bbox.getMaxX() - bbox.getMinX());
-		final double pixelPerMuY = imageHeight / (bbox.getMaxY() - bbox.getMinY());
+		final double pixelPerMuX =  bbox.getWidth() / (double) imageWidth;
+		final double pixelPerMuY =  bbox.getHeight() / (double) imageHeight;
 		
 		// use the average of the two ratios
 		return ((pixelPerMuX + pixelPerMuY) / 2) * pixelToConvert;
