@@ -62,9 +62,25 @@ class LineToPolygonConverter {
 	
 	public LineToPolygonConverter() {
 		BufferParameters bufferParameters = new BufferParameters();
-		bufferParameters.setEndCapStyle(BufferParameters.CAP_SQUARE);
-		bufferParameters.setJoinStyle(BufferParameters.CAP_FLAT);
-		bufferParameters.setQuadrantSegments(0);
+		//bufferParameters.setEndCapStyle(BufferParameters.CAP_SQUARE);
+		//bufferParameters.setJoinStyle(BufferParameters.CAP_FLAT);
+		
+		bufferParameters.setEndCapStyle(BufferParameters.CAP_FLAT);
+		
+		/*
+		 * Sets the number of line segments used to approximate an angle fillet.
+		 * 
+		 *   If quadSegs >= 1, joins are round, and quadSegs indicates the number of segments to use to approximate a quarter-circle.
+    	 *   If quadSegs = 0, joins are bevelled (flat)
+         *   If quadSegs < 0, joins are mitred, and the value of qs indicates the mitre ration limit as
+         *       mitreLimit = |quadSegs|
+         *
+         * For round joins, quadSegs determines the maximum error in the approximation to the true buffer curve. 
+         * The default value of 8 gives less than 2% max error in the buffer distance. For a max error of < 1%, 
+         * use QS = 12. For a max error of < 0.1%, use QS = 18. The error is always less than the buffer distance 
+         * (in other words, the computed buffer curve is always inside the true curve). 
+		 */
+		bufferParameters.setQuadrantSegments(18);
 		
 		this.curveBuilder = new OffsetCurveBuilder(new PrecisionModel(), bufferParameters);
 	}
