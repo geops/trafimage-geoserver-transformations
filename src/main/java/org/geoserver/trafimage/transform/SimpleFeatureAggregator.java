@@ -19,11 +19,41 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 
+/**
+ * 
+ * @author nico
+ *
+ */
 public class SimpleFeatureAggregator {
 
+	/**
+	 * Statisics on a performed aggregation
+	 * 
+	 * @author nico
+	 *
+	 */
+	public class AggregationStatistics {
+		
+		/**
+		 * the minimum number of features in an aggregate
+		 */
+		public int numMaxEntriesInAggregate = 0;
+		
+		/**
+		 * the number of aggregeted features created
+		 */
+		public int numAggregates = 0;
+		
+		/**
+		 * the number of input features
+		 */
+		public int numInputFeatures = 0;
+	}
+	
 	private ArrayList<String> aggregationColumns;
 	
 	private static final Logger LOGGER = Logging.getLogger(SimpleFeatureAggregator.class);
+	private AggregationStatistics lastStatistics = null;
 	
 	
 	public SimpleFeatureAggregator(final ArrayList<String> aggregationColumns) {
@@ -40,6 +70,9 @@ public class SimpleFeatureAggregator {
 		final SimpleFeatureType inputSchema = collection.getSchema();
 		final SimpleFeatureHasher hasher = new SimpleFeatureHasher();
 		hasher.setIncludeGeometry(true);
+		
+		this.lastStatistics = new AggregationStatistics();
+		this.lastStatistics.numInputFeatures = collection.size();
 		
 		// process the attributes string into a set to eliminate duplicates
 		for (final String attributeName: this.aggregationColumns) {
@@ -84,8 +117,12 @@ public class SimpleFeatureAggregator {
 				}
 				
 				final SimpleFeature outputFeature = featureMap.get(hash);
-				outputFeature.setAttribute(aggregateAttributeName, 
-						(Integer)outputFeature.getAttribute(aggregateAttributeName) + 1);
+				int counter = (Integer)outputFeature.getAttribute(aggregateAttributeName) + 1;
+				outputFeature.setAttribute(aggregateAttributeName, counter);
+				
+				if (counter > this.lastStatistics.numMaxEntriesInAggregate) {
+					this.lastStatistics.numMaxEntriesInAggregate = counter;
+				}
 			}
 		} finally {
 			featureIt.close(); // closes the underlying database query, ...  
@@ -94,6 +131,8 @@ public class SimpleFeatureAggregator {
 		// build the result collection
 		final ListFeatureCollection result = new ListFeatureCollection(outputSchema);
 		result.addAll(featureMap.values());
+		this.lastStatistics.numAggregates = result.size();
+		
 		LOGGER.finer("Aggregated "+collection.size()+" incoming features to "
 					+result.size()+" outgoing features");
 		return result;
@@ -130,5 +169,14 @@ public class SimpleFeatureAggregator {
 		typeBuilder.add(aggregateAttributeName, Integer.class);
 		
 		return typeBuilder.buildFeatureType();
+	}
+	
+	/**
+	 * get the statistics of the last aggregation performed
+	 * 
+	 * @return
+	 */
+	public AggregationStatistics getAggregationStatistics() {
+		return this.lastStatistics;
 	}
 }
