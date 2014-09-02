@@ -106,6 +106,9 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 			@DescribeParameter(name = "maxPolygonWidth", description = "The maximum width of a polygon in pixels.",
 					defaultValue = "20") Integer maxPolygonWidth,
 					
+			@DescribeParameter(name = "debugSqlFile", description = "Name of the file to write SQL insert statements of the generated polygons to."
+					+ "Leave unset to deactivate.",	defaultValue = "") String debugSqlFile,
+					
 			 // output image parameters
 			@DescribeParameter(name = "outputBBOX", description = "Bounding box for target image extent. Should be set using the env function from the WMS-Parameters.") ReferencedEnvelope outputEnv,
 			@DescribeParameter(name = "outputWidth", description = "Target image width in pixels. Should be set using the env function from the WMS-Parameters.", minValue = 1) Integer outputWidth,
@@ -183,8 +186,9 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		}
 		LOGGER.finer("Returning "+outputCollection.size()+" polygons");
 		
-		DebugIO.dumpCollectionToSQLFile(outputCollection, "/tmp/t.sql", "t");
-		
+		if (!debugSqlFile.equals("")) {
+			DebugIO.dumpCollectionToSQLFile(outputCollection, debugSqlFile, "aggregated_polygons");
+		}
 		return outputCollection;
 	}
 
