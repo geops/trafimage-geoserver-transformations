@@ -116,7 +116,9 @@ class LineToPolygonConverter {
 	public Polygon convert(final LineString line) {
 		
 		final double offset1 = this.offset;
-		final double offset2 = this.offset+this.width;
+		// draw the width in the other direction in case of a negative offset
+		final double directionOfWidth = Math.abs(this.offset)/this.offset;
+		final double offset2 = this.offset + (this.width * directionOfWidth);
 		
 		// create the two lines for the sides of the polygon
 		final Coordinate[] cLine1 = this.buildOffsettedLine(line, offset1);
@@ -130,7 +132,8 @@ class LineToPolygonConverter {
 		for(int i = (cLine2.length-1); i>=0; i--) {
 			cPolygon[cLine1.length+(cLine2.length-1-i)] = cLine2[i];
 		}
-		cPolygon[cLine1.length+cLine2.length] = cLine1[0]; // close the polygon
+		// close the polygon
+		cPolygon[cLine1.length+cLine2.length] = cLine1[0];
 		
 		GeometryFactory geomFactory = new GeometryFactory(line.getPrecisionModel(), line.getSRID());
 		LinearRing linearRing = geomFactory.createLinearRing(cPolygon);
