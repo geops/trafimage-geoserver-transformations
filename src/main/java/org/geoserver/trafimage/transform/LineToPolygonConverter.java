@@ -1,20 +1,16 @@
 package org.geoserver.trafimage.transform;
 
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 import org.geotools.process.ProcessException;
-import org.geotools.util.logging.Logging;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
-import com.vividsolutions.jts.operation.BoundaryOp;
 import com.vividsolutions.jts.operation.buffer.BufferParameters;
 import com.vividsolutions.jts.operation.buffer.OffsetCurveBuilder;
 
@@ -62,12 +58,10 @@ class LineToPolygonConverter {
 	
 	private final OffsetCurveBuilder curveBuilder;
 	
-	private static final Logger LOGGER = Logging.getLogger(LineToPolygonConverter.class);
-	
 	public LineToPolygonConverter() {
 		BufferParameters bufferParameters = new BufferParameters();
 		bufferParameters.setEndCapStyle(BufferParameters.CAP_FLAT);
-		bufferParameters.setJoinStyle(BufferParameters.JOIN_BEVEL);
+		bufferParameters.setJoinStyle(BufferParameters.JOIN_ROUND);
 
 		/*
 		 * Sets the number of line segments used to approximate an angle fillet.
@@ -83,7 +77,6 @@ class LineToPolygonConverter {
          * (in other words, the computed buffer curve is always inside the true curve). 
 		 */
 		bufferParameters.setQuadrantSegments(18);
-		//bufferParameters.setMitreLimit(20);
 		
 		this.curveBuilder = new OffsetCurveBuilder(new PrecisionModel(), bufferParameters);
 	}
