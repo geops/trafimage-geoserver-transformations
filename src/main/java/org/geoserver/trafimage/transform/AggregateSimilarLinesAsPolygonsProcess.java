@@ -98,11 +98,18 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 					+ " The attribute will be included in the aggregation."
 					+ " The attribute must be of type integer."
 					+ " If nothing is given here, 0 will be assumed. Value is in pixels.") String offsetAttributeName,
+				
 			@DescribeParameter(name = "widthAttribute", description = "The name attribute of the input collection which contains the value for the width of the generated polygon."
 					+ " The attribute will be included in the aggregation."
 					+ " The attribute must be of type integer."
-					+ " If nothing is given here, 10 will be assumed. Value is in pixels.") String widthAttributeName,
-			
+					+ " If nothing is given here, 10 will be assumed. Value is in pixels.", defaultValue = "") String widthAttributeName,
+	
+			@DescribeParameter(name = "widthScalingAlgorithm", description = "The scaling algorithm to use for the polygon width."
+					+ " Possible values are: linear, logarithmic", defaultValue = "linear") String widthScalingAlgorithm,
+	
+			@DescribeParameter(name = "maxPolygonWidth", description = "The maximum width of a polygon in pixels.",
+					defaultValue = "20") Integer maxPolygonWidth,
+					
 			 // output image parameters
 			@DescribeParameter(name = "outputBBOX", description = "Bounding box for target image extent. Should be set using the env function from the WMS-Parameters.") ReferencedEnvelope outputEnv,
 			@DescribeParameter(name = "outputWidth", description = "Target image width in pixels. Should be set using the env function from the WMS-Parameters.", minValue = 1) Integer outputWidth,
@@ -114,14 +121,29 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		final SimpleFeatureType inputFeatureType = collection.getSchema();
 		checkInputGeometryType(inputFeatureType);
 		
+		PolygonDrawingConfiguration drawingConfig = null;
+		
+		// choose the drawing configuration
+		if (widthScalingAlgorithm.equals("linear")) { 
+			drawingConfig = new LinearPolygonDrawingConfiguration();
+		} else if (widthScalingAlgorithm.equals("logarithmic")) {
+			drawingConfig = new LogarithmicPolygonDrawingConfiguration();
+		} else {
+			throw new ProcessException("Unknown scaling algorithm for widthScaling: "+widthScalingAlgorithm);
+		}
+		drawingConfig.setOffsetAttributeName(offsetAttributeName);
+		drawingConfig.setWidthAttributeName(widthAttributeName);
+		drawingConfig.setMaxPolygonWidth(maxPolygonWidth);
+		
 		// create a full list of attributes to aggregate by
 		final ArrayList<String> aggregationAttributes = ParameterHelper.splitAt(attributes, ",");
-		aggregationAttributes.add(widthAttributeName); // to have unique values and preserve the attribute during aggregation
-		aggregationAttributes.add(offsetAttributeName); // to have unique values and preserve the attribute during aggregation
-		
+		aggregationAttributes.addAll(drawingConfig.getAdditionalAggregationAttributes()); // to have unique values and preserve 
+																						  // the attribute during aggregation
 		// aggregate the features as simple lines for further processing
 		final SimpleFeatureAggregator aggregator = new SimpleFeatureAggregator(aggregationAttributes);
 		final SimpleFeatureCollection aggLinesCollection = aggregator.aggregate(collection, AGG_COUNT_ATTRIBUTE_NAME);
+		drawingConfig.setStatistics(aggregator.getAggregationStatistics());
+		drawingConfig.setAggCountAttributeName(AGG_COUNT_ATTRIBUTE_NAME);
 		
 		final SimpleFeatureType outputFeatureType = buildPolygonFeatureType(inputFeatureType);
 		final ListFeatureCollection outputCollection = new ListFeatureCollection(outputFeatureType);
@@ -135,8 +157,8 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 				
 				final SimpleFeature aggLine = aggLinesIt.next();
 				
-				final int widthPx = this.parseAttributeToInteger(aggLine, widthAttributeName, 4);
-				final int offsetPx = this.parseAttributeToInteger(aggLine, offsetAttributeName, 0);
+				final double widthPx = drawingConfig.getPolygonWidth(aggLine);
+				final double offsetPx = drawingConfig.getPolygonOffset(aggLine);
 				
 				lineToPolygon.setWidth(MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, widthPx));
 				lineToPolygon.setOffset(MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, offsetPx));
@@ -170,23 +192,5 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		
 		return outputCollection;
 	}
-	
-	/**
-	 * 
-	 * @param feature
-	 * @param attributeName
-	 * @return
-	 */
-	private int parseAttributeToInteger(final SimpleFeature feature, final String attributeName, final int defaultValue) {
-		final Object attribute = feature.getAttribute(attributeName);
-		int value = defaultValue;
-		if (attribute != null) {
-			try {
-				value = Integer.parseInt(attribute.toString());
-			} catch(NumberFormatException e) {
-				throw new ProcessException("Illegal value for attribute "+attributeName+": <"+attribute.toString()+">");
-			}
-		}
-		return value;
-	}
+
 }
