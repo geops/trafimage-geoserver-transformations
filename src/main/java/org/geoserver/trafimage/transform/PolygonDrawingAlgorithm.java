@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.geotools.process.ProcessException;
 import org.opengis.feature.simple.SimpleFeature;
 
-abstract class PolygonDrawingConfiguration {
+abstract class PolygonDrawingAlgorithm {
 
 	protected SimpleFeatureAggregator.AggregationStatistics statistics = null;
 	protected String widthAttributeName = null;
@@ -13,7 +13,7 @@ abstract class PolygonDrawingConfiguration {
 	protected int maxPolygonWidth = 10;
 	protected String aggCountAttributeName = null;
 	
-	public PolygonDrawingConfiguration() {
+	public PolygonDrawingAlgorithm() {
 		
 	}
 

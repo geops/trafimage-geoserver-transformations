@@ -121,29 +121,28 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		final SimpleFeatureType inputFeatureType = collection.getSchema();
 		checkInputGeometryType(inputFeatureType);
 		
-		PolygonDrawingConfiguration drawingConfig = null;
-		
 		// choose the drawing configuration
+		PolygonDrawingAlgorithm drawingAlgo = null;
 		if (widthScalingAlgorithm.equals("linear")) { 
-			drawingConfig = new LinearPolygonDrawingConfiguration();
+			drawingAlgo = new LinearPolygonDrawingAlgorithm();
 		} else if (widthScalingAlgorithm.equals("logarithmic")) {
-			drawingConfig = new LogarithmicPolygonDrawingConfiguration();
+			drawingAlgo = new LogarithmicPolygonDrawingAlgorithm();
 		} else {
 			throw new ProcessException("Unknown scaling algorithm for widthScaling: "+widthScalingAlgorithm);
 		}
-		drawingConfig.setOffsetAttributeName(offsetAttributeName);
-		drawingConfig.setWidthAttributeName(widthAttributeName);
-		drawingConfig.setMaxPolygonWidth(maxPolygonWidth);
+		drawingAlgo.setOffsetAttributeName(offsetAttributeName);
+		drawingAlgo.setWidthAttributeName(widthAttributeName);
+		drawingAlgo.setMaxPolygonWidth(maxPolygonWidth);
 		
 		// create a full list of attributes to aggregate by
 		final ArrayList<String> aggregationAttributes = ParameterHelper.splitAt(attributes, ",");
-		aggregationAttributes.addAll(drawingConfig.getAdditionalAggregationAttributes()); // to have unique values and preserve 
+		aggregationAttributes.addAll(drawingAlgo.getAdditionalAggregationAttributes()); // to have unique values and preserve 
 																						  // the attribute during aggregation
 		// aggregate the features as simple lines for further processing
 		final SimpleFeatureAggregator aggregator = new SimpleFeatureAggregator(aggregationAttributes);
 		final SimpleFeatureCollection aggLinesCollection = aggregator.aggregate(collection, AGG_COUNT_ATTRIBUTE_NAME);
-		drawingConfig.setStatistics(aggregator.getAggregationStatistics());
-		drawingConfig.setAggCountAttributeName(AGG_COUNT_ATTRIBUTE_NAME);
+		drawingAlgo.setStatistics(aggregator.getAggregationStatistics());
+		drawingAlgo.setAggCountAttributeName(AGG_COUNT_ATTRIBUTE_NAME);
 		
 		final SimpleFeatureType outputFeatureType = buildPolygonFeatureType(inputFeatureType);
 		final ListFeatureCollection outputCollection = new ListFeatureCollection(outputFeatureType);
@@ -157,8 +156,8 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 				
 				final SimpleFeature aggLine = aggLinesIt.next();
 				
-				final double widthPx = drawingConfig.getPolygonWidth(aggLine);
-				final double offsetPx = drawingConfig.getPolygonOffset(aggLine);
+				final double widthPx = drawingAlgo.getPolygonWidth(aggLine);
+				final double offsetPx = drawingAlgo.getPolygonOffset(aggLine);
 				
 				lineToPolygon.setWidth(MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, widthPx));
 				lineToPolygon.setOffset(MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, offsetPx));

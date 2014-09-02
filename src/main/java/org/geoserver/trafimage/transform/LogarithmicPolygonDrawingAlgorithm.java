@@ -4,9 +4,10 @@ import java.util.ArrayList;
 
 import org.opengis.feature.simple.SimpleFeature;
 
-class LinearPolygonDrawingConfiguration extends PolygonDrawingConfiguration {
+public class LogarithmicPolygonDrawingAlgorithm extends
+		PolygonDrawingAlgorithm {
 
-	public LinearPolygonDrawingConfiguration() {
+	public LogarithmicPolygonDrawingAlgorithm() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -25,7 +26,9 @@ class LinearPolygonDrawingConfiguration extends PolygonDrawingConfiguration {
 	@Override
 	public double getPolygonWidth(final SimpleFeature feature) {
 		final int aggCount = this.parseAttributeToInteger(feature, this.aggCountAttributeName, 1);
-		final double width = (double) this.maxPolygonWidth * (double) aggCount / (double) this.statistics.numMaxEntriesInAggregate;
+
+		final double scale = Math.log((double)aggCount + 1.0) / Math.log((double) this.statistics.numMaxEntriesInAggregate + 1.0);
+		final double width = (double) this.maxPolygonWidth * scale;
 		return width;
 	}
 
