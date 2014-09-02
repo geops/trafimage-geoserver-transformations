@@ -15,7 +15,6 @@ class SimpleFeatureHasher {
 	private HashSet<String> includedAttributes = new HashSet<String>();
 	
 	public SimpleFeatureHasher() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public void addIncludedAttribute(final String attributeName) {
@@ -47,7 +46,6 @@ class SimpleFeatureHasher {
 				md.update(value.toString().getBytes());
 			}
 		}
-		
 		return byteArrayToHexString(md.digest());
 	}
 	

@@ -29,19 +29,15 @@ import com.vividsolutions.jts.geom.Polygon;
 
 @DescribeProcess(title = "AggregateSimilarLinesAsPolygon", description = "Aggregate similar Line Features by their geometry and additional columns. "
 		+ "Returns the distict Polygon geometries, the aggregated columns as well as an"
-		+ " additional column 'agg_count' holding the number of features in the aggregation"
-		+ " ... TODO ...") // TODO offset, width, ...
+		+ " additional column 'agg_count' holding the number of features in the aggregation")
 public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess {
 
 	private static final String AGG_COUNT_ATTRIBUTE_NAME = "agg_count";
 	
 	private static final Logger LOGGER = Logging.getLogger(AggregateSimilarLinesAsPolygonsProcess.class);
 	
-	
 	public AggregateSimilarLinesAsPolygonsProcess() {
-		// TODO Auto-generated constructor stub
 	}
-
 
 	/**
 	 * return a FeatureType like the inputFeatureType just with Polygon as geometrytype

@@ -8,7 +8,6 @@ public class LogarithmicPolygonDrawingAlgorithm extends
 		PolygonDrawingAlgorithm {
 
 	public LogarithmicPolygonDrawingAlgorithm() {
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

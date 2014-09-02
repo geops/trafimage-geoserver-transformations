@@ -24,7 +24,6 @@ public class AggregateSimilarFeaturesProcess implements GeoServerProcess  {
 	private static final String AGG_COUNT_ATTRIBUTE_NAME = "agg_count";
 	
 	public AggregateSimilarFeaturesProcess() {
-		// TODO Auto-generated constructor stub
 	}
 	
 

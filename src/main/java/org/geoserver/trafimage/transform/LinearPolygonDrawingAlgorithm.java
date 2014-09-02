@@ -7,7 +7,6 @@ import org.opengis.feature.simple.SimpleFeature;
 class LinearPolygonDrawingAlgorithm extends PolygonDrawingAlgorithm {
 
 	public LinearPolygonDrawingAlgorithm() {
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
