@@ -187,7 +187,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		}
 		LOGGER.finer("Returning "+outputCollection.size()+" polygons");
 		
-		//DebugIO.dumpCollectionToSQLFile(outputCollection, "/tmp/t.sql", "t");
+		DebugIO.dumpCollectionToSQLFile(outputCollection, "/tmp/t.sql", "t");
 		
 		return outputCollection;
 	}
