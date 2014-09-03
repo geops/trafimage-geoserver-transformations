@@ -87,13 +87,13 @@ public class SimpleFeatureAggregator {
 		
 		// aggregate the features
 		final SimpleFeatureIterator featureIt = collection.features();
-		final HashMap<String, SimpleFeature> featureMap = new HashMap<String,SimpleFeature>();
+		final HashMap<Integer, SimpleFeature> featureMap = new HashMap<Integer,SimpleFeature>();
 		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
 		
 		try {
 			while (featureIt.hasNext()) {
 				final SimpleFeature feature = featureIt.next();
-				String hash = null;
+				int hash = 0;
 				try {
 					hash = hasher.getHash(feature);
 				} catch (NoSuchAlgorithmException e) {

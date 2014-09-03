@@ -16,8 +16,13 @@ The generated JAR will be in the target/ directory.
 This extension depends on the WPS extension which needs to be installed first. See 
 http://docs.geoserver.org/stable/en/user/extensions/wps/install.html on this topic.
 
-To install this extension, just drop the JAR in geoservers WEB-INF/lib/ directory and 
-restart geoserver. 
+To install this extension, drop the JAR in geoservers WEB-INF/lib/ directory and 
+restart geoserver. The jar has a few dependencies which are propably not included in geoserver.
+
+These dependencies are downloaded during the build and also need to be dropped in geoservers 
+WEB-INF/lib directory. The paths to these jar in the local maven repo is:
+
+* ~/.m2/repository/net/jpountz/lz4/lz4/1.2.0/lz4-1.2.0.jar
 
 To see if the installation was successful you may check if the rendering transformations 
 as WPS services. Just go to "Demos" -> "WPS request builder". The rendering transformations

@@ -48,6 +48,11 @@
 			<version>0.3.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.jpountz.lz4</groupId>
+			<artifactId>lz4</artifactId>
+			<version>1.2.0</version>
+		</dependency>
 	</dependencies>
 	<name>trafimage-geoserver-transformations</name>
 	<url>http://tickets.trafimage.geops.ch/issues/14080071</url>

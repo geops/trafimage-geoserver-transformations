@@ -1,18 +1,23 @@
 package org.geoserver.trafimage.transform;
 
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import net.jpountz.xxhash.StreamingXXHash32;
+import net.jpountz.xxhash.XXHashFactory;
+
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKBWriter;
 
 class SimpleFeatureHasher {
 
 	private boolean includeGeometry = true;
 	private HashSet<String> includedAttributes = new HashSet<String>();
+	private XXHashFactory factory = XXHashFactory.fastestInstance();
+	private WKBWriter wkbWriter = new WKBWriter();
 	
 	public SimpleFeatureHasher() {
 	}
@@ -21,20 +26,15 @@ class SimpleFeatureHasher {
 		this.includedAttributes.add(attributeName);
 	}
 	
-	private String byteArrayToHexString(final byte[] b) {
-		String result = "";
-		for (int i=0; i < b.length; i++) {
-			result += Integer.toString( ( b[i] & 0xff ) + 0x100, 16).substring( 1 );
-		}
-		return result;
-	}
 	
-	public String getHash(final SimpleFeature feature) throws NoSuchAlgorithmException {
-		final MessageDigest md = MessageDigest.getInstance("SHA-1");
+	public int getHash(final SimpleFeature feature) throws NoSuchAlgorithmException {
+		
+		StreamingXXHash32 hash32 = this.factory.newStreamingHash32(0x12af028e);
 		if (this.includeGeometry) {
 			final Geometry geom = (Geometry) feature.getDefaultGeometry();
 			if (geom != null) {
-				md.update(geom.toText().getBytes());
+				final byte[] geomBytes = wkbWriter.write(geom);
+				hash32.update(geomBytes, 0, geomBytes.length);
 			}
 		}
 		
@@ -43,10 +43,11 @@ class SimpleFeatureHasher {
 			final String attributeName = attributeIt.next();
 			final Object value = feature.getAttribute(attributeName);
 			if (value != null) {
-				md.update(value.toString().getBytes());
+				final byte[] valueBytes = value.toString().getBytes();
+				hash32.update(valueBytes, 0, valueBytes.length);
 			}
 		}
-		return byteArrayToHexString(md.digest());
+		return hash32.getValue();
 	}
 	
 	public HashSet<String> getIncludedAttributes() {
