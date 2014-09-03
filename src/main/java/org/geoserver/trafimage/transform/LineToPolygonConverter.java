@@ -1,8 +1,11 @@
 package org.geoserver.trafimage.transform;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.geotools.process.ProcessException;
+import org.geotools.util.logging.Logging;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -55,8 +58,11 @@ class LineToPolygonConverter {
 
 	private double offset = 0.0;
 	private double width = 10.0; 
+	protected boolean centerOnLine = true;
 	
 	private final OffsetCurveBuilder curveBuilder;
+	
+	private static final Logger LOGGER = Logging.getLogger(LineToPolygonConverter.class);
 	
 	public LineToPolygonConverter() {
 		BufferParameters bufferParameters = new BufferParameters();
@@ -104,10 +110,65 @@ class LineToPolygonConverter {
 		return result;
 	}
 	
+	
 	/**
-	 * cut off loops jts generates when creating the offsetted curve
 	 * 
-	 * this is a quite expensive method.
+	 * @param line
+	 * @return
+	 */
+	public Polygon convert(final LineString line) {
+
+		double offsetLine1;
+		double offsetLine2;
+		if (this.centerOnLine) {
+			// draw the polygon centered on the line. just ignoring the offset here.
+			offsetLine1 = this.width / -2.0;
+			offsetLine2 = this.width / 2.0;
+		} else {
+			// draw the polygon besides the line, offsetted by this.offset, with the width
+			// facing away from the line
+			
+			// draw the width in the other direction in case of a negative offset
+			final double directionOfWidth = Math.abs(this.offset)/this.offset;
+			offsetLine1 = this.offset;
+			offsetLine2 = this.offset + (this.width * directionOfWidth);
+		}
+		
+		if (LOGGER.getLevel() == Level.FINE) {
+			LOGGER.fine("Drawing polygon with"
+					+ " width="+this.width
+					+ " and centerOnLine="+Boolean.toString(this.centerOnLine)
+					+ " using offsetLine1="+offsetLine1
+					+ " and offsetLine2="+offsetLine2);
+		}
+		
+		// create the two lines for the sides of the polygon
+		final Coordinate[] cLine1 = this.buildOffsettedLine(line.getCoordinates(), offsetLine1);
+		final Coordinate[] cLine2 = this.buildOffsettedLine(line.getCoordinates(), offsetLine2);
+		//final Coordinate[] cLine2 = this.buildOffsettedLine(cLine1, this.width * directionOfWidth);
+
+		// use the two lines to build an polygon and close the open ends
+		final Coordinate[] cPolygon = new Coordinate[cLine1.length+cLine2.length+1];
+		for(int i = 0; i<cLine1.length; i++) {
+			cPolygon[i] = cLine1[i];
+		}
+		for(int i = (cLine2.length-1); i>=0; i--) {
+			cPolygon[cLine1.length+(cLine2.length-1-i)] = cLine2[i];
+		}
+		// close the polygon
+		cPolygon[cLine1.length+cLine2.length] = cLine1[0];
+		
+		GeometryFactory geomFactory = new GeometryFactory(line.getPrecisionModel(), line.getSRID());
+		LinearRing linearRing = geomFactory.createLinearRing(cutJoinLoops(cPolygon));
+		Polygon polygon = geomFactory.createPolygon(linearRing);
+		return polygon;
+	}
+	
+	/**
+	 * cut off loops JTS generates when creating the offsetted curve
+	 * 
+	 * this is a quite expensive method and will also cut loops which originate in the 
+	 * line itself.
 	 * 
 	 * @param coordinates
 	 * @return
@@ -156,34 +217,10 @@ class LineToPolygonConverter {
 	
 	/**
 	 * 
-	 * @param line
-	 * @return
+	 * @param centerOnLine
 	 */
-	public Polygon convert(final LineString line) {
-
-		// draw the width in the other direction in case of a negative offset
-		final double directionOfWidth = Math.abs(this.offset)/this.offset;
-		
-		// create the two lines for the sides of the polygon
-		final Coordinate[] cLine1 = this.buildOffsettedLine(line.getCoordinates(), this.offset);
-		final Coordinate[] cLine2 = this.buildOffsettedLine(line.getCoordinates(), this.offset + (this.width * directionOfWidth));
-		//final Coordinate[] cLine2 = this.buildOffsettedLine(cLine1, this.width * directionOfWidth);
-
-		// use the two lines to build an polygon and close the open ends
-		final Coordinate[] cPolygon = new Coordinate[cLine1.length+cLine2.length+1];
-		for(int i = 0; i<cLine1.length; i++) {
-			cPolygon[i] = cLine1[i];
-		}
-		for(int i = (cLine2.length-1); i>=0; i--) {
-			cPolygon[cLine1.length+(cLine2.length-1-i)] = cLine2[i];
-		}
-		// close the polygon
-		cPolygon[cLine1.length+cLine2.length] = cLine1[0];
-		
-		GeometryFactory geomFactory = new GeometryFactory(line.getPrecisionModel(), line.getSRID());
-		LinearRing linearRing = geomFactory.createLinearRing(cutJoinLoops(cPolygon));
-		Polygon polygon = geomFactory.createPolygon(linearRing);
-		return polygon;
+	public void setCenterOnLine(boolean centerOnLine) {
+		this.centerOnLine = centerOnLine;
 	}
 	
 	/**

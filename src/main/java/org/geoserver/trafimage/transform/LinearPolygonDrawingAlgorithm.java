@@ -18,6 +18,9 @@ class LinearPolygonDrawingAlgorithm extends PolygonDrawingAlgorithm {
 
 	@Override
 	public double getPolygonOffset(final SimpleFeature feature) {
+		if (this.getCenterOnLine()) {
+			return this.getPolygonWidth(feature) / -2.0;
+		}
 		return (double) this.parseAttributeToInteger(feature, this.offsetAttributeName, 0);
 	}
 

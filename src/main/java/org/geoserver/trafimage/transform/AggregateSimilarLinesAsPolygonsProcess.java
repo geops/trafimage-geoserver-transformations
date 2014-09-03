@@ -93,7 +93,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 			@DescribeParameter(name = "offsetAttribute", description = "The name attribute of the input collection which contains the value for the offset of the generated polygon."
 					+ " The attribute will be included in the aggregation."
 					+ " The attribute must be of type integer."
-					+ " If nothing is given here, 0 will be assumed. Value is in pixels.") String offsetAttributeName,
+					+ " If nothing is given here, polygons will be centered on the line. Value is in pixels.", defaultValue = "") String offsetAttributeName,
 				
 			@DescribeParameter(name = "widthAttribute", description = "The name attribute of the input collection which contains the value for the width of the generated polygon."
 					+ " The attribute will be included in the aggregation."
@@ -107,6 +107,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 					defaultValue = "20") Integer maxPolygonWidth,
 					
 			@DescribeParameter(name = "debugSqlFile", description = "Name of the file to write SQL insert statements of the generated polygons to."
+					+ " Other attributes will not be written."
 					+ "Leave unset to deactivate.",	defaultValue = "") String debugSqlFile,
 					
 			 // output image parameters
@@ -149,6 +150,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		// build polygons
 		final SimpleFeatureIterator aggLinesIt = aggLinesCollection.features();
 		final LineToPolygonConverter lineToPolygon = new LineToPolygonConverter();
+		lineToPolygon.setCenterOnLine(drawingAlgo.getCenterOnLine());
 		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputFeatureType);
 		try {
 			while (aggLinesIt.hasNext()) {

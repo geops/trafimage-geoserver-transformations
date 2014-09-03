@@ -12,6 +12,7 @@ abstract class PolygonDrawingAlgorithm {
 	protected String offsetAttributeName = null;
 	protected int maxPolygonWidth = 10;
 	protected String aggCountAttributeName = null;
+	protected boolean centerOnLine = true;
 	
 	public PolygonDrawingAlgorithm() {
 		
@@ -19,28 +20,13 @@ abstract class PolygonDrawingAlgorithm {
 
 	abstract ArrayList<String> getAdditionalAggregationAttributes();
 	
+	public boolean getCenterOnLine() {
+		return this.centerOnLine;
+	}
+	
 	abstract public double getPolygonOffset(final SimpleFeature feature);
+	
 	abstract public double getPolygonWidth(final SimpleFeature feature);
-	
-	public void setOffsetAttributeName(final String name) {
-		this.offsetAttributeName = name;
-	}
-	
-	public void setStatistics(SimpleFeatureAggregator.AggregationStatistics statistics) {
-		this.statistics = statistics;
-	}
-	
-	public void setWidthAttributeName(final String name) {
-		this.widthAttributeName = name;
-	}
-	
-	public void setMaxPolygonWidth(final int width) {
-		this.maxPolygonWidth = width;
-	}
-	
-	public void setAggCountAttributeName(final String name) {
-		this.aggCountAttributeName = name;
-	}
 	
 	/**
 	 * 
@@ -62,5 +48,34 @@ abstract class PolygonDrawingAlgorithm {
 			}
 		}
 		return value;
+	}
+	
+	public void setAggCountAttributeName(final String name) {
+		this.aggCountAttributeName = name;
+	}
+	
+	public void setMaxPolygonWidth(final int width) {
+		this.maxPolygonWidth = width;
+	}
+	
+	public void setOffsetAttributeName(final String name) {
+		this.offsetAttributeName = name;
+		if (name == null) {
+			this.centerOnLine = true;
+		} else {
+			if (name.equals("")) {
+				this.centerOnLine = true;
+			} else {
+				this.centerOnLine = false;
+			}
+		}
+	}
+	
+	public void setStatistics(SimpleFeatureAggregator.AggregationStatistics statistics) {
+		this.statistics = statistics;
+	}
+	
+	public void setWidthAttributeName(final String name) {
+		this.widthAttributeName = name;
 	}
 }
