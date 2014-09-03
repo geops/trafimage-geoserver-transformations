@@ -56,7 +56,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 
 		for (final AttributeDescriptor descriptor: inputFeatureType.getAttributeDescriptors()) {
 			if (!(descriptor instanceof GeometryDescriptor)) {
-				LOGGER.finer("Adding attribute "+descriptor.getName().toString()+" to new SimpleFeatureType");
+				LOGGER.fine("Adding attribute "+descriptor.getName().toString()+" to new SimpleFeatureType");
 				typeBuilder.add(descriptor);
 			}
 		}
@@ -85,36 +85,52 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 	 */
 	@DescribeResult(name = "result", description = "Aggregated feature collection ctaining polygons")
 	public SimpleFeatureCollection execute(
-			// process data
-			@DescribeParameter(name = "collection", description = "Input feature collection") SimpleFeatureCollection collection,
+			// -- process data -------------------------
+			@DescribeParameter(name = "collection", 
+					description = "Input feature collection") SimpleFeatureCollection collection,
 			
-			// processing parameters
-			@DescribeParameter(name = "attributes", description = "Comma-seperated string of attributes to include in the aggregation") String attributes,
-			@DescribeParameter(name = "offsetAttribute", description = "The name attribute of the input collection which contains the value for the offset of the generated polygon."
+					
+			// -- processing parameters -----------------------------
+			@DescribeParameter(name = "attributes", 
+					description = "Comma-seperated string of attributes to include in the aggregation") String attributes,
+			@DescribeParameter(name = "offsetAttribute", 
+					description = "The name attribute of the input collection which contains the value for the offset of the generated polygon."
 					+ " The attribute will be included in the aggregation."
 					+ " The attribute must be of type integer."
-					+ " If nothing is given here, polygons will be centered on the line. Value is in pixels.", defaultValue = "") String offsetAttributeName,
-				
-			@DescribeParameter(name = "widthAttribute", description = "The name attribute of the input collection which contains the value for the width of the generated polygon."
-					+ " The attribute will be included in the aggregation."
-					+ " The attribute must be of type integer."
-					+ " If nothing is given here, 10 will be assumed. Value is in pixels.", defaultValue = "") String widthAttributeName,
-	
-			@DescribeParameter(name = "widthScalingAlgorithm", description = "The scaling algorithm to use for the polygon width."
-					+ " Possible values are: linear, logarithmic", defaultValue = "linear") String widthScalingAlgorithm,
-	
-			@DescribeParameter(name = "maxPolygonWidth", description = "The maximum width of a polygon in pixels.",
+					+ " If nothing is given here, polygons will be centered on the line. Value is in pixels.", 
+					defaultValue = "") String offsetAttributeName,
+			@DescribeParameter(name = "widthScalingAlgorithm", 
+					description = "The scaling algorithm to use for the polygon width."
+					+ " Possible values are: linear, logarithmic", 
+					defaultValue = "linear") String widthScalingAlgorithm,
+			@DescribeParameter(name = "maxPolygonWidth",
+					description = "The maximum width of a polygon in pixels.",
 					defaultValue = "20") Integer maxPolygonWidth,
+	/*			
+			@DescribeParameter(name = "widthAttribute", 
+					description = "The name attribute of the input collection which contains the value for the width of the generated polygon."
+					+ " The attribute will be included in the aggregation."
+					+ " The attribute must be of type integer."
+					+ " If nothing is given here, 10 will be assumed. Value is in pixels.", 
+					defaultValue = "") String widthAttributeName,
+	*/
 					
-			@DescribeParameter(name = "debugSqlFile", description = "Name of the file to write SQL insert statements of the generated polygons to."
+			 // --- output image parameters --------------------------------------
+			@DescribeParameter(name = "outputBBOX", 
+					description = "Bounding box for target image extent. Should be set using the env function from the WMS-Parameters.") ReferencedEnvelope outputEnv,
+			@DescribeParameter(name = "outputWidth",
+					description = "Target image width in pixels. Should be set using the env function from the WMS-Parameters.", minValue = 1) Integer outputWidth,
+			@DescribeParameter(name = "outputHeight",
+					description = "Target image height in pixels. Should be set using the env function from the WMS-Parameters.", minValue = 1) Integer outputHeight,
+					
+					
+			// --- other --------------------------------------
+			@DescribeParameter(name = "debugSqlFile", 
+					description = "Name of the file to write SQL insert statements of the generated polygons to."
 					+ " Other attributes will not be written."
-					+ "Leave unset to deactivate.",	defaultValue = "") String debugSqlFile,
+					+ "Leave unset to deactivate.",	
+					defaultValue = "") String debugSqlFile,
 					
-			 // output image parameters
-			@DescribeParameter(name = "outputBBOX", description = "Bounding box for target image extent. Should be set using the env function from the WMS-Parameters.") ReferencedEnvelope outputEnv,
-			@DescribeParameter(name = "outputWidth", description = "Target image width in pixels. Should be set using the env function from the WMS-Parameters.", minValue = 1) Integer outputWidth,
-			@DescribeParameter(name = "outputHeight", description = "Target image height in pixels. Should be set using the env function from the WMS-Parameters.", minValue = 1) Integer outputHeight,
-
 			ProgressListener monitor
 			) throws ProcessException {
 					
@@ -131,13 +147,16 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 			throw new ProcessException("Unknown scaling algorithm for widthScaling: "+widthScalingAlgorithm);
 		}
 		drawingAlgo.setOffsetAttributeName(offsetAttributeName);
-		drawingAlgo.setWidthAttributeName(widthAttributeName);
+		//drawingAlgo.setWidthAttributeName(widthAttributeName);
 		drawingAlgo.setMaxPolygonWidth(maxPolygonWidth);
 		
 		// create a full list of attributes to aggregate by
 		final ArrayList<String> aggregationAttributes = ParameterHelper.splitAt(attributes, ",");
 		aggregationAttributes.addAll(drawingAlgo.getAdditionalAggregationAttributes()); // to have unique values and preserve 
 																						  // the attribute during aggregation
+		monitor.started();
+		monitor.progress(0.0f);
+		
 		// aggregate the features as simple lines for further processing
 		final SimpleFeatureAggregator aggregator = new SimpleFeatureAggregator(aggregationAttributes);
 		final SimpleFeatureCollection aggLinesCollection = aggregator.aggregate(collection, AGG_COUNT_ATTRIBUTE_NAME);
@@ -149,13 +168,16 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		
 		// build polygons
 		final SimpleFeatureIterator aggLinesIt = aggLinesCollection.features();
+		final int aggLinesCount = aggLinesCollection.size();
 		final LineToPolygonConverter lineToPolygon = new LineToPolygonConverter();
 		lineToPolygon.setCenterOnLine(drawingAlgo.getCenterOnLine());
 		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputFeatureType);
 		try {
+			int aggLineI = 0;
 			while (aggLinesIt.hasNext()) {
-				
 				final SimpleFeature aggLine = aggLinesIt.next();
+				
+				monitor.progress((float)aggLineI/(float)aggLinesCount);
 				
 				final double widthPx = drawingAlgo.getPolygonWidth(aggLine);
 				final double offsetPx = drawingAlgo.getPolygonOffset(aggLine);
@@ -167,7 +189,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 				Object lineGeometry = aggLine.getDefaultGeometry();
 				if (lineGeometry != null) {
 					if (!(lineGeometry instanceof LineString)) {
-						throw new ProcessException("Input geometries must be LineStrings");
+						throw new ProcessException("Input geometries must be of the type LineString");
 					}
 					featureBuilder.set(0, lineToPolygon.convert((LineString) lineGeometry));
 				}
@@ -182,15 +204,20 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 					}
 				}
 				outputCollection.add(featureBuilder.buildFeature(aggLine.getID()));
+				aggLineI++;
 			}
 		} finally {
 			aggLinesIt.close();
 		}
-		LOGGER.finer("Returning "+outputCollection.size()+" polygons");
-		
+	
 		if (!debugSqlFile.equals("")) {
 			DebugIO.dumpCollectionToSQLFile(outputCollection, debugSqlFile, "aggregated_polygons");
 		}
+		
+		monitor.progress(1.0f);
+		monitor.complete();
+		LOGGER.fine("Returning "+outputCollection.size()+" polygons");
+		
 		return outputCollection;
 	}
 

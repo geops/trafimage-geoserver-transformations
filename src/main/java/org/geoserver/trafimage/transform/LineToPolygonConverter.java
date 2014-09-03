@@ -104,7 +104,16 @@ class LineToPolygonConverter {
 		}
 		final Coordinate[] result = this.curveBuilder.getOffsetCurve(coordinates, lineOffset);
 		if (result == null) {
-			//LOGGER.severe("Could not build offsetted line for "+coordinates.toText());
+			GeometryFactory geomFactory = new GeometryFactory(new PrecisionModel());
+			LineString logLineGeom = geomFactory.createLineString(coordinates);
+			
+			StringBuilder logSB = new StringBuilder()
+				.append("Could not build offsetted line ")
+				.append("(lineOffset=").append(lineOffset).append(")")
+				.append(" for LineString ")
+				.append(logLineGeom.toText());
+			LOGGER.severe(logSB.toString());
+			
 			throw new ProcessException("Could not build offsetted line");
 		}
 		return result;
@@ -135,17 +144,21 @@ class LineToPolygonConverter {
 		}
 		
 		if (LOGGER.getLevel() == Level.FINE) {
-			LOGGER.fine("Drawing polygon with"
-					+ " width="+this.width
-					+ " and centerOnLine="+Boolean.toString(this.centerOnLine)
-					+ " using offsetLine1="+offsetLine1
-					+ " and offsetLine2="+offsetLine2);
+			StringBuilder logSB = new StringBuilder()
+				.append("Drawing polygon with")
+				.append(" width=").append(this.width)
+				.append(" and centerOnLine=").append(Boolean.toString(this.centerOnLine))
+				.append(" using offsetLine1=").append(offsetLine1)
+				.append(" and offsetLine2=").append(offsetLine2);
+			LOGGER.fine(logSB.toString());
 		}
 		
 		// create the two lines for the sides of the polygon
+		// NOTE: the first line may also be used as a base to generate the second line from. This
+		//       approach will lead to larger artifacts as small errors in rounded corners or line endings
+		//       in the first line will multiply in the second line.
 		final Coordinate[] cLine1 = this.buildOffsettedLine(line.getCoordinates(), offsetLine1);
 		final Coordinate[] cLine2 = this.buildOffsettedLine(line.getCoordinates(), offsetLine2);
-		//final Coordinate[] cLine2 = this.buildOffsettedLine(cLine1, this.width * directionOfWidth);
 
 		// use the two lines to build an polygon and close the open ends
 		final Coordinate[] cPolygon = new Coordinate[cLine1.length+cLine2.length+1];
