@@ -7,6 +7,7 @@ import org.geoserver.wps.gs.GeoServerProcess;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -19,6 +20,8 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.filter.sort.SortBy;
+import org.opengis.filter.sort.SortOrder;
 import org.opengis.util.ProgressListener;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -221,17 +224,37 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		} finally {
 			aggLinesIt.close();
 		}
-	
+		
+		// sort the features so no wider polygon covers a smaller polygon. 
+		final SimpleFeatureCollection sortedOutputCollection = this.sortCollection(outputCollection);
+
 		if (!debugSqlFile.equals("")) {
 			LOGGER.warning("Writing debugSqlFile to "+debugSqlFile+". This should only be activated for debugging purposes.");
-			DebugIO.dumpCollectionToSQLFile(outputCollection, debugSqlFile, "aggregated_polygons");
+			DebugIO.dumpCollectionToSQLFile(sortedOutputCollection, debugSqlFile, "aggregated_polygons");
 		}
 		
 		monitor.progress(1.0f);
 		monitor.complete();
-		LOGGER.fine("Returning "+outputCollection.size()+" polygons");
+
+		LOGGER.fine("Returning "+sortedOutputCollection.size()+" polygons");
 		
-		return outputCollection;
+		return sortedOutputCollection;
 	}
 
+	
+	/**
+	 * sort the features so no wider polygon covers a smaller polygon.
+	 * 
+	 * @param inCollection
+	 * @return
+	 */
+	private SimpleFeatureCollection sortCollection(final SimpleFeatureCollection inCollection) {
+		// seems as the sorting does not work with doubles, so this is sorting the indirect way by using the agg_count
+		// instead
+		SortBy sortBy = CommonFactoryFinder.getFilterFactory().sort(AGG_COUNT_ATTRIBUTE_NAME,
+                SortOrder.DESCENDING);
+		SimpleFeatureCollection sortedOutputCollection = inCollection.sort(sortBy);
+		return sortedOutputCollection;
+	}
+	
 }
