@@ -1,9 +1,26 @@
 Geoserver rendering transformation for feature aggregation. See #14080071
 
-# Examples
+# Installation
 
-For the SLD code for all exmpales see the examples directory.
+This extension depends on the WPS extension which needs to be installed first. See http://docs.geoserver.org/stable/en/user/extensions/wps/install.html on this topic.
+
+To install this extension, just drop the JAR in geoservers WEB-INF/lib/ directory and restart geoserver. 
+
+To see if the installation was successful you may check if the rendering transformations as a WPS service. Just go to "Demos" -> "WPS request builder". The rendering transformations
+should be available in the "Choose Process" select box. The names are 
+
+* "gs:AggregateSimilarFeatures"
+* "gs:AggregateSimilarLinesAsPolygon"
+
+
+# Styling examples
+
+For the SLD code for all examples see the examples directory.
 
 ## AggregateSimilarFeatures:
 
 ![aggregatesimilarfeatures_1.png](examples/aggregatesimilarfeatures_1.png)
+
+## AggregateSimilarLinesAsPolygon:
+
+![aggregatesimilarlinesaspolygons_1.png](examples/aggregatesimilarlinesaspolygons_1.png)
