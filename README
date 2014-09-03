@@ -33,6 +33,8 @@ For the SLD code for all examples see the examples directory. Documentation on t
 parameters of the rendering transformations is available in the "WPS request builder"
 or in the source files.
 
+Make sure you have an index on the geometries as this will speed up the aggregation significantly.
+
 ## AggregateSimilarFeatures:
 
 ![aggregatesimilarfeatures_1.png](examples/aggregatesimilarfeatures_1.png)

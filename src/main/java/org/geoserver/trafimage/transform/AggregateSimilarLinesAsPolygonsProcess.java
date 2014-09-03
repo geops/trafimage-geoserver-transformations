@@ -33,6 +33,7 @@ import com.vividsolutions.jts.geom.Polygon;
 public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess {
 
 	private static final String AGG_COUNT_ATTRIBUTE_NAME = "agg_count";
+	private static final String POLYGON_WIDTH_ATTRIBUTE_NAME = "polygon_width";
 	
 	private static final Logger LOGGER = Logging.getLogger(AggregateSimilarLinesAsPolygonsProcess.class);
 	
@@ -60,6 +61,8 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 				typeBuilder.add(descriptor);
 			}
 		}
+		
+		typeBuilder.add(POLYGON_WIDTH_ATTRIBUTE_NAME, Double.class);
 		return typeBuilder.buildFeatureType();
 	}
 	
@@ -83,7 +86,10 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 	 * @return
 	 * @throws ProcessException
 	 */
-	@DescribeResult(name = "result", description = "Aggregated feature collection ctaining polygons")
+	@DescribeResult(name = "result", description = "Aggregated feature collection containing polygons."
+			+ "The outputlayer will contain the geometry, all attibutes included in the aggregation,"
+		    + " the attribute agg_count containing the number of features aggregated in a polygon,"
+			+ " and the attriute polygon_width which contains the width of a polygon in pixels")
 	public SimpleFeatureCollection execute(
 			// -- process data -------------------------
 			@DescribeParameter(name = "collection", 
@@ -208,6 +214,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 						}
 					}
 				}
+				featureBuilder.set(POLYGON_WIDTH_ATTRIBUTE_NAME, widthPx);
 				outputCollection.add(featureBuilder.buildFeature(aggLine.getID()));
 				aggLineI++;
 			}
