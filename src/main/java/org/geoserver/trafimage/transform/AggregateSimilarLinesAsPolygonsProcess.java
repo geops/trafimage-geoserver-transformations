@@ -211,6 +211,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		}
 	
 		if (!debugSqlFile.equals("")) {
+			LOGGER.warning("Writing debugSqlFile to "+debugSqlFile+". This should only be activated for debugging purposes.");
 			DebugIO.dumpCollectionToSQLFile(outputCollection, debugSqlFile, "aggregated_polygons");
 		}
 		
