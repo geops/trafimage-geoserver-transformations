@@ -106,6 +106,10 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 			@DescribeParameter(name = "maxPolygonWidth",
 					description = "The maximum width of a polygon in pixels.",
 					defaultValue = "20") Integer maxPolygonWidth,
+			@DescribeParameter(name = "enableArtifactRemoval",
+					description = "Attempt to remove rendering artifacts in polygons."
+					+ " This is a very expensive operation and will only run in a acceptable time when there are just a few features.",
+					defaultValue = "false") boolean enableArtifactRemoval,
 	/*			
 			@DescribeParameter(name = "widthAttribute", 
 					description = "The name attribute of the input collection which contains the value for the width of the generated polygon."
@@ -171,6 +175,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		final int aggLinesCount = aggLinesCollection.size();
 		final LineToPolygonConverter lineToPolygon = new LineToPolygonConverter();
 		lineToPolygon.setCenterOnLine(drawingAlgo.getCenterOnLine());
+		lineToPolygon.setEnableArtifactRemoval(enableArtifactRemoval);
 		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputFeatureType);
 		try {
 			int aggLineI = 0;
@@ -189,7 +194,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 				Object lineGeometry = aggLine.getDefaultGeometry();
 				if (lineGeometry != null) {
 					if (!(lineGeometry instanceof LineString)) {
-						throw new ProcessException("Input geometries must be of the type LineString");
+						throw new ProcessException("Input geometries must be of the type LineString, is: "+lineGeometry.getClass().getName());
 					}
 					featureBuilder.set(0, lineToPolygon.convert((LineString) lineGeometry));
 				}

@@ -59,6 +59,7 @@ class LineToPolygonConverter {
 	private double offset = 0.0;
 	private double width = 10.0; 
 	protected boolean centerOnLine = true;
+	private boolean enableArtifactRemoval = false; 
 	
 	private final OffsetCurveBuilder curveBuilder;
 	
@@ -147,7 +148,8 @@ class LineToPolygonConverter {
 			StringBuilder logSB = new StringBuilder()
 				.append("Drawing polygon with")
 				.append(" width=").append(this.width)
-				.append(" and centerOnLine=").append(Boolean.toString(this.centerOnLine))
+				.append(", centerOnLine=").append(Boolean.toString(this.centerOnLine))
+				.append(" and enableArtifactRemoval=").append(Boolean.toString(this.enableArtifactRemoval))
 				.append(" using offsetLine1=").append(offsetLine1)
 				.append(" and offsetLine2=").append(offsetLine2);
 			LOGGER.fine(logSB.toString());
@@ -171,9 +173,15 @@ class LineToPolygonConverter {
 		// close the polygon
 		cPolygon[cLine1.length+cLine2.length] = cLine1[0];
 		
-		GeometryFactory geomFactory = new GeometryFactory(line.getPrecisionModel(), line.getSRID());
-		LinearRing linearRing = geomFactory.createLinearRing(cutJoinLoops(cPolygon));
-		Polygon polygon = geomFactory.createPolygon(linearRing);
+		final GeometryFactory geomFactory = new GeometryFactory(line.getPrecisionModel(), line.getSRID());
+		
+		final LinearRing linearRing;
+		if (this.enableArtifactRemoval) {
+			linearRing = geomFactory.createLinearRing(cutJoinLoops(cPolygon));
+		} else {
+			linearRing = geomFactory.createLinearRing(cPolygon);
+		}
+		final Polygon polygon = geomFactory.createPolygon(linearRing);
 		return polygon;
 	}
 	
@@ -247,6 +255,16 @@ class LineToPolygonConverter {
 		this.offset = offset;
 	}
 	
+	/**
+	 * Attempt to remove rendering artifacts in polygons.
+	 * 
+	 * This is a very expensive operation and will only run in a acceptable time when there are just a few features.
+	 * 
+	 * @param enableArtifactRemoval
+	 */
+	public void setEnableArtifactRemoval(final boolean enableArtifactRemoval) {
+		this.enableArtifactRemoval = enableArtifactRemoval;
+	}
 	
 	/**
 	 * set the width of the resulting polygon
