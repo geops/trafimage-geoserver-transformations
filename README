@@ -6,7 +6,7 @@ This extension depends on the WPS extension which needs to be installed first. S
 
 To install this extension, just drop the JAR in geoservers WEB-INF/lib/ directory and restart geoserver. 
 
-To see if the installation was successful you may check if the rendering transformations as a WPS service. Just go to "Demos" -> "WPS request builder". The rendering transformations
+To see if the installation was successful you may check if the rendering transformations as WPS services. Just go to "Demos" -> "WPS request builder". The rendering transformations
 should be available in the "Choose Process" select box. The names are 
 
 * "gs:AggregateSimilarFeatures"
@@ -24,3 +24,13 @@ For the SLD code for all examples see the examples directory.
 ## AggregateSimilarLinesAsPolygon:
 
 ![aggregatesimilarlinesaspolygons_1.png](examples/aggregatesimilarlinesaspolygons_1.png)
+
+
+# Developing and Debugging using eclipse
+
+* Load geoserver into eclipse using "File" -> "Import..". Import Geoserver as an "Existing Maven project", otherwise the WPS extension will not be available.
+* Load this project into eclipse. Also import as an "Existing Maven project".
+* Right-click geoservers importet "web-app" project. Go to "Properties". There add the project of the rendering transformations to "Project References".
+* Launch Geoserver by selecting "Run" -> "Java Application" in the right-click menu of the class src/test/java/org.geoserver/web/Start.java in the "web-app" project. The same should work for "Debug" -> "Java Application".
+
+There is also a guide for using eclipse with geoserver at http://docs.geoserver.org/latest/en/developer/eclipse-guide/ .
