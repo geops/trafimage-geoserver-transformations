@@ -103,7 +103,7 @@ class LineToPolygonConverter {
 			return coordinates;
 		}
 		final Coordinate[] result = this.curveBuilder.getOffsetCurve(coordinates, lineOffset);
-		if (result == null) {
+		if (result == null || (result.length == 0 && coordinates.length != 0)) {
 			GeometryFactory geomFactory = new GeometryFactory(new PrecisionModel());
 			LineString logLineGeom = geomFactory.createLineString(coordinates);
 			
