@@ -13,11 +13,14 @@ The generated JAR will be in the target/ directory.
 
 ## Installing into Geoserver
 
-This extension depends on the WPS extension which needs to be installed first. See http://docs.geoserver.org/stable/en/user/extensions/wps/install.html on this topic.
+This extension depends on the WPS extension which needs to be installed first. See 
+http://docs.geoserver.org/stable/en/user/extensions/wps/install.html on this topic.
 
-To install this extension, just drop the JAR in geoservers WEB-INF/lib/ directory and restart geoserver. 
+To install this extension, just drop the JAR in geoservers WEB-INF/lib/ directory and 
+restart geoserver. 
 
-To see if the installation was successful you may check if the rendering transformations as WPS services. Just go to "Demos" -> "WPS request builder". The rendering transformations
+To see if the installation was successful you may check if the rendering transformations 
+as WPS services. Just go to "Demos" -> "WPS request builder". The rendering transformations
 should be available in the "Choose Process" select box. The names are 
 
 * "gs:AggregateSimilarFeatures"
@@ -26,7 +29,9 @@ should be available in the "Choose Process" select box. The names are
 
 # Styling examples
 
-For the SLD code for all examples see the examples directory.
+For the SLD code for all examples see the examples directory. Documentation on the 
+parameters of the rendering transformations is available in the "WPS request builder"
+or in the source files.
 
 ## AggregateSimilarFeatures:
 
