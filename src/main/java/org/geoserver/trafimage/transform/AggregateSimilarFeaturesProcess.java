@@ -46,7 +46,8 @@ public class AggregateSimilarFeaturesProcess implements GeoServerProcess  {
 
 			// other
 			@DescribeParameter(name = "enableDurationMeasurement",
-					description = "Profiling option to log time durations spend in parts of this transformation to geoservers logile. "
+					description = "Profiling option to log time durations spend in parts of this transformation to geoservers logfile. "
+					+ " This will be logged on the INFO level. "
 					+ " The default is Disabled (false).",
 					defaultValue = "false") boolean enableDurationMeasurement,
 					
