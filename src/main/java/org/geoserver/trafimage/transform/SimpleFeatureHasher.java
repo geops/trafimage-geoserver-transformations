@@ -1,9 +1,9 @@
 package org.geoserver.trafimage.transform;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Iterator;
 
+// the source lz4 is hosted at https://github.com/jpountz/lz4-java
 import net.jpountz.xxhash.StreamingXXHash32;
 import net.jpountz.xxhash.XXHashFactory;
 
@@ -16,7 +16,7 @@ class SimpleFeatureHasher {
 
 	private boolean includeGeometry = true;
 	private HashSet<String> includedAttributes = new HashSet<String>();
-	private XXHashFactory factory = XXHashFactory.fastestInstance();
+	private XXHashFactory hashFactory = XXHashFactory.fastestInstance();
 	private WKBWriter wkbWriter = new WKBWriter();
 	
 	public SimpleFeatureHasher() {
@@ -27,9 +27,9 @@ class SimpleFeatureHasher {
 	}
 	
 	
-	public int getHash(final SimpleFeature feature) throws NoSuchAlgorithmException {
-		
-		StreamingXXHash32 hash32 = this.factory.newStreamingHash32(0x12af028e);
+	public int getHash(final SimpleFeature feature) {
+		final int seed = 0x12af028e;
+		StreamingXXHash32 hash32 = this.hashFactory.newStreamingHash32(seed);
 		if (this.includeGeometry) {
 			final Geometry geom = (Geometry) feature.getDefaultGeometry();
 			if (geom != null) {

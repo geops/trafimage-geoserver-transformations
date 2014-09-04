@@ -1,6 +1,5 @@
 package org.geoserver.trafimage.transform;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,7 +11,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.process.ProcessException;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -93,12 +91,7 @@ public class SimpleFeatureAggregator {
 		try {
 			while (featureIt.hasNext()) {
 				final SimpleFeature feature = featureIt.next();
-				int hash = 0;
-				try {
-					hash = hasher.getHash(feature);
-				} catch (NoSuchAlgorithmException e) {
-					throw new ProcessException(e);
-				}
+				final int hash = hasher.getHash(feature);
 				
 				if (!featureMap.containsKey(hash)) {
 					// idx =0 is always the geometry. same order as during the creation of the SimpleFeatureBuilder
