@@ -11,8 +11,25 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+/**
+ * For easier debugging, ...
+ * 
+ * @author nico
+ *
+ */
 public class DebugIO {
 	
+	/**
+	 * write the feature collection to a sql file. 
+	 * 
+	 * this takes a few shortcuts, for example all attributes are omitted
+	 * 
+	 * SQL dialect of the file is PostgreSQL/PostGIS.
+	 * 
+	 * @param collection
+	 * @param fileName
+	 * @param tableName
+	 */
 	public static void dumpCollectionToSQLFile(SimpleFeatureCollection collection, String fileName, String tableName) {
 		PrintWriter writer;
 		try {
@@ -25,7 +42,7 @@ public class DebugIO {
 		
 		try {
 			writer.println("begin;");
-			writer.println("drop table if exists "+tableName+";");
+			writer.println("drop table if exists "+tableName+";");	
 			writer.println("create table "+tableName+" (id integer, geom geometry);");
 			
 			final SimpleFeatureIterator cIt = collection.features();

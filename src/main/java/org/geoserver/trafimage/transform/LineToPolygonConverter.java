@@ -121,7 +121,6 @@ class LineToPolygonConverter extends MeasuredTime {
 		return result;
 	}
 	
-	
 	/**
 	 * 
 	 * @param line
@@ -129,62 +128,52 @@ class LineToPolygonConverter extends MeasuredTime {
 	 */
 	public Polygon convert(final LineString line) {
 		this.startMeasuring();
-		double offsetLine1;
-		double offsetLine2;
-		if (this.centerOnLine) {
-			// draw the polygon centered on the line. just ignoring the offset here.
-			offsetLine1 = this.width / -2.0;
-			offsetLine2 = this.width / 2.0;
-		} else {
-			// draw the polygon besides the line, offsetted by this.offset, with the width
-			// facing away from the line
+		try {
+			double[] offsets = this.getOffsets();
 			
-			// draw the width in the other direction in case of a negative offset
-			final double directionOfWidth = Math.abs(this.offset)/this.offset;
-			offsetLine1 = this.offset;
-			offsetLine2 = this.offset + (this.width * directionOfWidth);
-		}
+			if (LOGGER.getLevel() == Level.FINE) {
+				StringBuilder logSB = new StringBuilder()
+					.append("Drawing polygon with")
+					.append(" width=").append(this.width)
+					.append(", centerOnLine=").append(Boolean.toString(this.centerOnLine))
+					.append(" and enableArtifactRemoval=").append(Boolean.toString(this.enableArtifactRemoval))
+					.append(" using offsets[0]=").append(offsets[0])
+					.append(" and offsets[1]=").append(offsets[1]);
+				LOGGER.fine(logSB.toString());
+			}
+			
+			// create the two lines for the sides of the polygon
+			// NOTE: the first line may also be used as a base to generate the second line from. This
+			//       approach will lead to larger artifacts as small errors in rounded corners or line endings
+			//       in the first line will multiply in the second line.
+			final Coordinate[] cLine0 = this.buildOffsettedLine(line.getCoordinates(), offsets[0]);
+			final Coordinate[] cLine1 = this.buildOffsettedLine(line.getCoordinates(), offsets[1]);
+	
+			// use the two lines to build an polygon and close the open ends
+			final Coordinate[] cPolygon = new Coordinate[cLine0.length+cLine1.length+1];
+			for(int i = 0; i<cLine0.length; i++) {
+				cPolygon[i] = cLine0[i];
+			}
+			for(int i = (cLine1.length-1); i>=0; i--) {
+				cPolygon[cLine0.length+(cLine1.length-1-i)] = cLine1[i];
+			}
+			// close the polygon
+			cPolygon[cLine0.length+cLine1.length] = cLine0[0];
+			
+			final GeometryFactory geomFactory = new GeometryFactory(line.getPrecisionModel(), line.getSRID());
+			
+			final LinearRing linearRing;
+			if (this.enableArtifactRemoval) {
+				linearRing = geomFactory.createLinearRing(cutJoinLoops(cPolygon));
+			} else {
+				linearRing = geomFactory.createLinearRing(cPolygon);
+			}
+			final Polygon polygon = geomFactory.createPolygon(linearRing);
+			return polygon;
 		
-		if (LOGGER.getLevel() == Level.FINE) {
-			StringBuilder logSB = new StringBuilder()
-				.append("Drawing polygon with")
-				.append(" width=").append(this.width)
-				.append(", centerOnLine=").append(Boolean.toString(this.centerOnLine))
-				.append(" and enableArtifactRemoval=").append(Boolean.toString(this.enableArtifactRemoval))
-				.append(" using offsetLine1=").append(offsetLine1)
-				.append(" and offsetLine2=").append(offsetLine2);
-			LOGGER.fine(logSB.toString());
+		} finally {
+			this.stopMeasuring();
 		}
-		
-		// create the two lines for the sides of the polygon
-		// NOTE: the first line may also be used as a base to generate the second line from. This
-		//       approach will lead to larger artifacts as small errors in rounded corners or line endings
-		//       in the first line will multiply in the second line.
-		final Coordinate[] cLine1 = this.buildOffsettedLine(line.getCoordinates(), offsetLine1);
-		final Coordinate[] cLine2 = this.buildOffsettedLine(line.getCoordinates(), offsetLine2);
-
-		// use the two lines to build an polygon and close the open ends
-		final Coordinate[] cPolygon = new Coordinate[cLine1.length+cLine2.length+1];
-		for(int i = 0; i<cLine1.length; i++) {
-			cPolygon[i] = cLine1[i];
-		}
-		for(int i = (cLine2.length-1); i>=0; i--) {
-			cPolygon[cLine1.length+(cLine2.length-1-i)] = cLine2[i];
-		}
-		// close the polygon
-		cPolygon[cLine1.length+cLine2.length] = cLine1[0];
-		
-		final GeometryFactory geomFactory = new GeometryFactory(line.getPrecisionModel(), line.getSRID());
-		
-		final LinearRing linearRing;
-		if (this.enableArtifactRemoval) {
-			linearRing = geomFactory.createLinearRing(cutJoinLoops(cPolygon));
-		} else {
-			linearRing = geomFactory.createLinearRing(cPolygon);
-		}
-		final Polygon polygon = geomFactory.createPolygon(linearRing);
-		this.stopMeasuring();
-		return polygon;
 	}
 	
 	/**
@@ -239,22 +228,34 @@ class LineToPolygonConverter extends MeasuredTime {
 	}
 	
 	/**
+	 * line offsets for the left and right side of the polygon
+	 * 
+	 * @return double[2]
+	 */
+	private double[] getOffsets() {
+		final double[] offsets = {0, 0};
+		if (this.centerOnLine) {
+			// draw the polygon centered on the line. just ignoring the offset here.
+			offsets[0] = this.width / -2.0;
+			offsets[1] = this.width / 2.0;
+		} else {
+			// draw the polygon besides the line, offsetted by this.offset, with the width
+			// facing away from the line
+			
+			// draw the width in the other direction in case of a negative offset
+			final double directionOfWidth = Math.abs(this.offset)/this.offset;
+			offsets[0] = this.offset;
+			offsets[1] = this.offset + (this.width * directionOfWidth);
+		}	
+		return offsets;
+	}
+	
+	/**
 	 * 
 	 * @param centerOnLine
 	 */
 	public void setCenterOnLine(boolean centerOnLine) {
 		this.centerOnLine = centerOnLine;
-	}
-	
-	/**
-	 * set the offset the polygon has to the line it originates from
-	 * 
-	 * use negative/positive values to place the polygon to the right\left of the line
-	 * 
-	 * @param offset Offset in map units
-	 */
-	public void setOffset(final double offset) {
-		this.offset = offset;
 	}
 	
 	/**
@@ -266,6 +267,17 @@ class LineToPolygonConverter extends MeasuredTime {
 	 */
 	public void setEnableArtifactRemoval(final boolean enableArtifactRemoval) {
 		this.enableArtifactRemoval = enableArtifactRemoval;
+	}
+	
+	/**
+	 * set the offset the polygon has to the line it originates from
+	 * 
+	 * use negative/positive values to place the polygon to the right\left of the line
+	 * 
+	 * @param offset Offset in map units
+	 */
+	public void setOffset(final double offset) {
+		this.offset = offset;
 	}
 	
 	/**

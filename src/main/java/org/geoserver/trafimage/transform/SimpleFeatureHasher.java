@@ -31,30 +31,31 @@ class SimpleFeatureHasher extends MeasuredTime {
 	
 	public int getHash(final SimpleFeature feature) {
 		this.startMeasuring();
-		
-		final int seed = 0x12af028e;
-		StreamingXXHash32 hash32 = this.hashFactory.newStreamingHash32(seed);
-		if (this.includeGeometry) {
-			final Geometry geom = (Geometry) feature.getDefaultGeometry();
-			if (geom != null) {
-				final byte[] geomBytes = wkbWriter.write(geom);
-				hash32.update(geomBytes, 0, geomBytes.length);
+		try {
+			final int seed = 0x12af028e;
+			StreamingXXHash32 hash32 = this.hashFactory.newStreamingHash32(seed);
+			if (this.includeGeometry) {
+				final Geometry geom = (Geometry) feature.getDefaultGeometry();
+				if (geom != null) {
+					final byte[] geomBytes = wkbWriter.write(geom);
+					hash32.update(geomBytes, 0, geomBytes.length);
+				}
 			}
-		}
-		
-		final Iterator<String> attributeIt = this.includedAttributes.iterator();
-		while (attributeIt.hasNext()) {
-			final String attributeName = attributeIt.next();
-			final Object value = feature.getAttribute(attributeName);
-			if (value != null) {
-				final byte[] valueBytes = value.toString().getBytes();
-				hash32.update(valueBytes, 0, valueBytes.length);
+			
+			final Iterator<String> attributeIt = this.includedAttributes.iterator();
+			while (attributeIt.hasNext()) {
+				final String attributeName = attributeIt.next();
+				final Object value = feature.getAttribute(attributeName);
+				if (value != null) {
+					final byte[] valueBytes = value.toString().getBytes();
+					hash32.update(valueBytes, 0, valueBytes.length);
+				}
 			}
+			return hash32.getValue();
+			
+		} finally {
+			this.stopMeasuring();
 		}
-		final int value = hash32.getValue();
-		
-		this.stopMeasuring();
-		return value;
 	}
 	
 	public HashSet<String> getIncludedAttributes() {
