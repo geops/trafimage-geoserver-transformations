@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.geoserver.trafimage.transform.util.MeasuredTime;
 import org.geotools.process.ProcessException;
 import org.geotools.util.logging.Logging;
 
@@ -54,7 +55,7 @@ import com.vividsolutions.jts.operation.buffer.OffsetCurveBuilder;
  * @author nico
  *
  */
-class LineToPolygonConverter {
+class LineToPolygonConverter extends MeasuredTime {
 
 	private double offset = 0.0;
 	private double width = 10.0; 
@@ -127,7 +128,7 @@ class LineToPolygonConverter {
 	 * @return
 	 */
 	public Polygon convert(final LineString line) {
-
+		this.startMeasuring();
 		double offsetLine1;
 		double offsetLine2;
 		if (this.centerOnLine) {
@@ -182,6 +183,7 @@ class LineToPolygonConverter {
 			linearRing = geomFactory.createLinearRing(cPolygon);
 		}
 		final Polygon polygon = geomFactory.createPolygon(linearRing);
+		this.stopMeasuring();
 		return polygon;
 	}
 	

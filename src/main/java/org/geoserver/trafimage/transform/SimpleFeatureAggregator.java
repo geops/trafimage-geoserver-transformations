@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import org.geoserver.trafimage.transform.util.MeasuredSimpleFeatureIterator;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.logging.Logging;
@@ -84,7 +84,7 @@ public class SimpleFeatureAggregator {
 		final SimpleFeatureType outputSchema = this.buildOutputFeatureType(inputSchema, attributesSet, aggregateAttributeName);
 		
 		// aggregate the features
-		final SimpleFeatureIterator featureIt = collection.features();
+		final MeasuredSimpleFeatureIterator featureIt = new MeasuredSimpleFeatureIterator(collection.features());
 		final HashMap<Integer, SimpleFeature> featureMap = new HashMap<Integer,SimpleFeature>();
 		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
 		
@@ -120,6 +120,9 @@ public class SimpleFeatureAggregator {
 		} finally {
 			featureIt.close(); // closes the underlying database query, ...  
 		}
+		
+		LOGGER.info("Spend "+featureIt.getTimeSpendInSeconds()+" seconds on just reading features from the datasource.");
+		LOGGER.info("Spend "+hasher.getTimeSpendInSeconds()+" seconds on just creating feature hashes.");
 		
 		// build the result collection
 		final ListFeatureCollection result = new ListFeatureCollection(outputSchema);

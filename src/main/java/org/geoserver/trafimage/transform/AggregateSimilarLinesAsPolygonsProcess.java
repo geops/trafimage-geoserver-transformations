@@ -3,6 +3,7 @@ package org.geoserver.trafimage.transform;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import org.geoserver.trafimage.transform.util.DebugIO;
 import org.geoserver.wps.gs.GeoServerProcess;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -224,6 +225,8 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		} finally {
 			aggLinesIt.close();
 		}
+		
+		LOGGER.info("Spend "+lineToPolygon.getTimeSpendInSeconds()+" seconds on just converting lines to polygons.");
 		
 		// sort the features so no wider polygon covers a smaller polygon. 
 		final SimpleFeatureCollection sortedOutputCollection = this.sortCollection(outputCollection);

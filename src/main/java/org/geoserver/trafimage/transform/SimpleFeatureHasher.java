@@ -3,16 +3,18 @@ package org.geoserver.trafimage.transform;
 import java.util.HashSet;
 import java.util.Iterator;
 
+
 // the source lz4 is hosted at https://github.com/jpountz/lz4-java
 import net.jpountz.xxhash.StreamingXXHash32;
 import net.jpountz.xxhash.XXHashFactory;
 
+import org.geoserver.trafimage.transform.util.MeasuredTime;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKBWriter;
 
-class SimpleFeatureHasher {
+class SimpleFeatureHasher extends MeasuredTime {
 
 	private boolean includeGeometry = true;
 	private HashSet<String> includedAttributes = new HashSet<String>();
@@ -28,6 +30,8 @@ class SimpleFeatureHasher {
 	
 	
 	public int getHash(final SimpleFeature feature) {
+		this.startMeasuring();
+		
 		final int seed = 0x12af028e;
 		StreamingXXHash32 hash32 = this.hashFactory.newStreamingHash32(seed);
 		if (this.includeGeometry) {
@@ -47,7 +51,10 @@ class SimpleFeatureHasher {
 				hash32.update(valueBytes, 0, valueBytes.length);
 			}
 		}
-		return hash32.getValue();
+		final int value = hash32.getValue();
+		
+		this.stopMeasuring();
+		return value;
 	}
 	
 	public HashSet<String> getIncludedAttributes() {
