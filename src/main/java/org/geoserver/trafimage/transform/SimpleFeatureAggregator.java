@@ -134,7 +134,9 @@ public class SimpleFeatureAggregator {
 		}
 		
 		if (featureIt.isMeasuringEnabled()) {
-			LOGGER.info("Spend "+featureIt.getTimeSpendInSeconds()+" seconds on just reading features from the datasource.");
+			LOGGER.info("Spend "+featureIt.getTimeSpendInSeconds()+" seconds on just reading "
+					+ collection.size()
+					+ " features from the datasource.");
 		}
 		if (hasher.isMeasuringEnabled()) {
 			LOGGER.info("Spend "+hasher.getTimeSpendInSeconds()+" seconds on just creating feature hashes.");
@@ -145,8 +147,10 @@ public class SimpleFeatureAggregator {
 		result.addAll(featureMap.values());
 		this.lastStatistics.numAggregates = result.size();
 		
-		LOGGER.finer("Aggregated "+collection.size()+" incoming features to "
-					+result.size()+" outgoing features");
+		if (this.measuringEnabled) {
+			LOGGER.info("Aggregated "+collection.size()+" incoming features to "
+						+result.size()+" outgoing features");
+		}
 		return result;
 	}
 
