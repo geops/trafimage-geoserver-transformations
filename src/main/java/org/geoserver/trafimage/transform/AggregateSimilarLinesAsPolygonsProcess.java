@@ -144,6 +144,10 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 					+ " Other attributes will not be written."
 					+ "Leave unset to deactivate.",	
 					defaultValue = "") String debugSqlFile,
+			@DescribeParameter(name = "enableDurationMeasurement",
+					description = "Profiling option to log time durations spend in parts of this transformation to geoservers logile. "
+					+ " The default is Disabled (false).",
+					defaultValue = "false") boolean enableDurationMeasurement,
 					
 			ProgressListener monitor
 			) throws ProcessException {
@@ -173,6 +177,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		
 		// aggregate the features as simple lines for further processing
 		final SimpleFeatureAggregator aggregator = new SimpleFeatureAggregator(aggregationAttributes);
+		aggregator.setMeasuringEnabled(enableDurationMeasurement);
 		final SimpleFeatureCollection aggLinesCollection = aggregator.aggregate(collection, AGG_COUNT_ATTRIBUTE_NAME);
 		drawingAlgo.setStatistics(aggregator.getAggregationStatistics());
 		drawingAlgo.setAggCountAttributeName(AGG_COUNT_ATTRIBUTE_NAME);
@@ -180,12 +185,14 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		final SimpleFeatureType outputFeatureType = buildPolygonFeatureType(inputFeatureType);
 		final ListFeatureCollection outputCollection = new ListFeatureCollection(outputFeatureType);
 		
-		// build polygons
-		final SimpleFeatureIterator aggLinesIt = aggLinesCollection.features();
-		final int aggLinesCount = aggLinesCollection.size();
 		final LineToPolygonConverter lineToPolygon = new LineToPolygonConverter();
 		lineToPolygon.setCenterOnLine(drawingAlgo.getCenterOnLine());
 		lineToPolygon.setEnableArtifactRemoval(enableArtifactRemoval);
+		lineToPolygon.setMeasuringEnabled(enableDurationMeasurement);
+		
+		// build polygons
+		final SimpleFeatureIterator aggLinesIt = aggLinesCollection.features();
+		final int aggLinesCount = aggLinesCollection.size();
 		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputFeatureType);
 		try {
 			int aggLineI = 0;
@@ -226,7 +233,9 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 			aggLinesIt.close();
 		}
 		
-		LOGGER.info("Spend "+lineToPolygon.getTimeSpendInSeconds()+" seconds on just converting lines to polygons.");
+		if (lineToPolygon.isMeasuringEnabled()) {
+			LOGGER.info("Spend "+lineToPolygon.getTimeSpendInSeconds()+" seconds on just converting lines to polygons.");
+		}
 		
 		// sort the features so no wider polygon covers a smaller polygon. 
 		final SimpleFeatureCollection sortedOutputCollection = this.sortCollection(outputCollection);

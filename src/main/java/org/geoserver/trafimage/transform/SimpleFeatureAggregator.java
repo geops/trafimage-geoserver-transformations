@@ -52,10 +52,20 @@ public class SimpleFeatureAggregator {
 	
 	private static final Logger LOGGER = Logging.getLogger(SimpleFeatureAggregator.class);
 	private AggregationStatistics lastStatistics = null;
+	private boolean measuringEnabled = false;
 	
 	
 	public SimpleFeatureAggregator(final ArrayList<String> aggregationColumns) {
 		this.aggregationColumns = aggregationColumns;
+	}
+	
+	/**
+	 * enable profiling and logging of time durations
+	 * 
+	 * @param enabled
+	 */
+	public void setMeasuringEnabled(boolean enabled) {
+		this.measuringEnabled = enabled;
 	}
 	
 	/**
@@ -67,6 +77,7 @@ public class SimpleFeatureAggregator {
 	public SimpleFeatureCollection aggregate(final SimpleFeatureCollection collection, final String aggregateAttributeName) {
 		final SimpleFeatureType inputSchema = collection.getSchema();
 		final SimpleFeatureHasher hasher = new SimpleFeatureHasher();
+		hasher.setMeasuringEnabled(this.measuringEnabled);
 		hasher.setIncludeGeometry(true);
 		
 		this.lastStatistics = new AggregationStatistics();
@@ -85,6 +96,7 @@ public class SimpleFeatureAggregator {
 		
 		// aggregate the features
 		final MeasuredSimpleFeatureIterator featureIt = new MeasuredSimpleFeatureIterator(collection.features());
+		featureIt.setMeasuringEnabled(this.measuringEnabled);
 		final HashMap<Integer, SimpleFeature> featureMap = new HashMap<Integer,SimpleFeature>();
 		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
 		
@@ -121,8 +133,12 @@ public class SimpleFeatureAggregator {
 			featureIt.close(); // closes the underlying database query, ...  
 		}
 		
-		LOGGER.info("Spend "+featureIt.getTimeSpendInSeconds()+" seconds on just reading features from the datasource.");
-		LOGGER.info("Spend "+hasher.getTimeSpendInSeconds()+" seconds on just creating feature hashes.");
+		if (featureIt.isMeasuringEnabled()) {
+			LOGGER.info("Spend "+featureIt.getTimeSpendInSeconds()+" seconds on just reading features from the datasource.");
+		}
+		if (hasher.isMeasuringEnabled()) {
+			LOGGER.info("Spend "+hasher.getTimeSpendInSeconds()+" seconds on just creating feature hashes.");
+		}
 		
 		// build the result collection
 		final ListFeatureCollection result = new ListFeatureCollection(outputSchema);

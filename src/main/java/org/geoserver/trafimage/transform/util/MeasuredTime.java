@@ -4,11 +4,7 @@ abstract public class MeasuredTime {
 	
 	private long timeSpend = 0;
 	private long measureStart = 0;
-	private boolean measuringEnabled = true;
-	
-	public void setMeasuringEnabled(boolean enabled) {
-		this.measuringEnabled = enabled;
-	}
+	private boolean measuringEnabled = false;
 	
 	public void clearTimeSpend() {
 		this.timeSpend = 0;
@@ -17,9 +13,17 @@ abstract public class MeasuredTime {
 	public long getTimeSpendInNanoSeconds() {
 		return this.timeSpend;
 	}
-
+	
 	public double getTimeSpendInSeconds() {
 		return (double) this.getTimeSpendInNanoSeconds() / 1000000000.0;
+	}
+	
+	public boolean isMeasuringEnabled() {
+		return this.measuringEnabled;
+	}
+
+	public void setMeasuringEnabled(boolean enabled) {
+		this.measuringEnabled = enabled;
 	}
 	
 	protected void startMeasuring() {

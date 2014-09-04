@@ -44,10 +44,17 @@ public class AggregateSimilarFeaturesProcess implements GeoServerProcess  {
 			// processing parameters
 			@DescribeParameter(name = "attributes", description = "Comma-seperated string of attributes to include in the aggregation") String attributes,
 
+			// other
+			@DescribeParameter(name = "enableDurationMeasurement",
+					description = "Profiling option to log time durations spend in parts of this transformation to geoservers logile. "
+					+ " The default is Disabled (false).",
+					defaultValue = "false") boolean enableDurationMeasurement,
+					
 			ProgressListener monitor
 			) throws ProcessException {
 			
 		SimpleFeatureAggregator aggregator = new SimpleFeatureAggregator(ParameterHelper.splitAt(attributes, ","));
+		aggregator.setMeasuringEnabled(enableDurationMeasurement);
 		return aggregator.aggregate(collection, AGG_COUNT_ATTRIBUTE_NAME);
 	}
 	
