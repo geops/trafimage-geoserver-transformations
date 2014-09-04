@@ -29,7 +29,8 @@ public class LogarithmicPolygonDrawingAlgorithm extends
 	public double getPolygonWidth(final SimpleFeature feature) {
 		final int aggCount = this.parseAttributeToInteger(feature, this.aggCountAttributeName, 1);
 
-		final double scale = Math.log((double)aggCount + 1.0) / Math.log((double) this.statistics.numMaxEntriesInAggregate + 1.0);
+		final double scale = Math.log((double) Math.min(aggCount, this.maxPolygonWidthFeatureCount) + 1.0) 
+				/ Math.log((double) this.maxPolygonWidthFeatureCount + 1.0);
 		final double width = (double) this.maxPolygonWidth * scale;
 		return width;
 	}

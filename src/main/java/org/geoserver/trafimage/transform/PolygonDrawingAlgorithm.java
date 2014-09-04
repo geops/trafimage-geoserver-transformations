@@ -7,8 +7,6 @@ import org.opengis.feature.simple.SimpleFeature;
 
 abstract class PolygonDrawingAlgorithm {
 
-	protected SimpleFeatureAggregator.AggregationStatistics statistics = null;
-	
 	/**
 	 * @deprecated
 	 */
@@ -18,6 +16,7 @@ abstract class PolygonDrawingAlgorithm {
 	protected int maxPolygonWidth = 10;
 	protected String aggCountAttributeName = null;
 	private boolean centerOnLine = true;
+	protected int maxPolygonWidthFeatureCount = 10;
 	
 	public PolygonDrawingAlgorithm() {
 		
@@ -80,6 +79,16 @@ abstract class PolygonDrawingAlgorithm {
 	}
 	
 	/**
+	 * set the number of features which have to be at least in an aggregation for
+	 * the polygon to be drawn with the full width of maxPolygonWidth
+	 * 
+	 * @param maxPolygonWidthFeatureCount
+	 */
+	public void setMaxPolygonWidthFeatureCount(int maxPolygonWidthFeatureCount) {
+		this.maxPolygonWidthFeatureCount = maxPolygonWidthFeatureCount;
+	}
+	
+	/**
 	 * the attribute to read the offset of a geometry from.
 	 * 
 	 * set to null or "" to center polygon on the lines
@@ -99,14 +108,6 @@ abstract class PolygonDrawingAlgorithm {
 		}
 	}
 	
-	/**
-	 * the statistics gathered by the aggregator
-	 * 
-	 * @param statistics
-	 */
-	public void setStatistics(SimpleFeatureAggregator.AggregationStatistics statistics) {
-		this.statistics = statistics;
-	}
 	
 	/**
 	 * The name of the integer attribute to read the width of a polygon from

@@ -120,6 +120,14 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 					description = "Attempt to remove rendering artifacts in polygons."
 					+ " This is a very expensive operation and will only run in a acceptable time when there are just a few features.",
 					defaultValue = "false") boolean enableArtifactRemoval,
+			@DescribeParameter(name = "maxPolygonWidthFeatureCount",
+					description = "The number of features which have to be in an aggregation for the polygon to be drawn with <maxPolygonWidth>."
+					+ " This parameter is optional and allows overriding the default. The default is the number of features in the"
+					+ " largest aggregation. While this leads to an even spread of line width, it also results in growing/shrinking polygons"
+					+ " when the map extents is modified and other aggregations enter or exit the view."
+					+ " This, of course, will result in all values above this parameter being squashed at the <maxPolygonWidth>."
+					+ " Value has to be an positive Integer larger than 0.",
+					defaultValue = "0") Integer maxPolygonWidthFeatureCount,
 	/*			
 			@DescribeParameter(name = "widthAttribute", 
 					description = "The name attribute of the input collection which contains the value for the width of the generated polygon."
@@ -156,6 +164,10 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		final SimpleFeatureType inputFeatureType = collection.getSchema();
 		checkInputGeometryType(inputFeatureType);
 		
+		if (maxPolygonWidthFeatureCount<0) {
+			throw new ProcessException("maxPolygonWithFeatureCount has to be a positive value, but currently is "+maxPolygonWidthFeatureCount);
+		}
+		
 		// choose the drawing configuration
 		PolygonDrawingAlgorithm drawingAlgo = null;
 		if (widthScalingAlgorithm.equals("linear")) { 
@@ -180,7 +192,11 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		final SimpleFeatureAggregator aggregator = new SimpleFeatureAggregator(aggregationAttributes);
 		aggregator.setMeasuringEnabled(enableDurationMeasurement);
 		final SimpleFeatureCollection aggLinesCollection = aggregator.aggregate(collection, AGG_COUNT_ATTRIBUTE_NAME);
-		drawingAlgo.setStatistics(aggregator.getAggregationStatistics());
+		if (maxPolygonWidthFeatureCount>0) {
+			drawingAlgo.setMaxPolygonWidthFeatureCount(maxPolygonWidthFeatureCount);
+		} else {
+			drawingAlgo.setMaxPolygonWidthFeatureCount(aggregator.getAggregationStatistics().numMaxEntriesInAggregate);
+		}
 		drawingAlgo.setAggCountAttributeName(AGG_COUNT_ATTRIBUTE_NAME);
 		
 		final SimpleFeatureType outputFeatureType = buildPolygonFeatureType(inputFeatureType);

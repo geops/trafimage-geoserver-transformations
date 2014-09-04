@@ -27,7 +27,8 @@ class LinearPolygonDrawingAlgorithm extends PolygonDrawingAlgorithm {
 	@Override
 	public double getPolygonWidth(final SimpleFeature feature) {
 		final int aggCount = this.parseAttributeToInteger(feature, this.aggCountAttributeName, 1);
-		final double width = (double) this.maxPolygonWidth * (double) aggCount / (double) this.statistics.numMaxEntriesInAggregate;
+		final double width = (double) this.maxPolygonWidth 
+				* Math.min(1.0, (double) aggCount / (double) this.maxPolygonWidthFeatureCount);
 		return width;
 	}
 
