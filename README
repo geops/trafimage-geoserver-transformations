@@ -44,7 +44,9 @@ Make sure you have an index on the geometries as this will speed up the aggregat
 ![aggregatesimilarlinesaspolygons_1.png](examples/aggregatesimilarlinesaspolygons_1.png)
 
 
-# Developing and Debugging using eclipse
+# Development
+
+## Developing and Debugging using eclipse
 
 * Load geoserver into eclipse using "File" -> "Import..". Import Geoserver as an "Existing Maven project", otherwise the WPS extension will not be available.
 * Load this project into eclipse. Also import as an "Existing Maven project".
@@ -52,3 +54,7 @@ Make sure you have an index on the geometries as this will speed up the aggregat
 * Launch Geoserver by selecting "Run" -> "Java Application" in the right-click menu of the class src/test/java/org.geoserver/web/Start.java in the "web-app" project. The same should work for "Debug" -> "Java Application".
 
 There is also a guide for using eclipse with geoserver at http://docs.geoserver.org/latest/en/developer/eclipse-guide/ .
+
+## Version information
+
+Tha Jars build usiing `make` contain the git commit hash of the source. This can be viewed by opening the file "trafimage-geoserver-transformations.gitversion" bundled in the JAR.
