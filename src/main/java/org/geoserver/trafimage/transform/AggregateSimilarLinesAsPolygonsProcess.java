@@ -32,8 +32,9 @@ import com.vividsolutions.jts.geom.Polygon;
 
 
 @DescribeProcess(title = "AggregateSimilarLinesAsPolygon", description = "Aggregate similar Line Features by their geometry and additional columns. "
-		+ "Returns the distict Polygon geometries, the aggregated columns as well as an"
-		+ " additional column 'agg_count' holding the number of features in the aggregation")
+		+ "Returns the distict Polygon geometries, the aggregated columns, an"
+		+ " additional column 'agg_count' holding the number of features in the aggregation"
+		+ " and the additional column 'polygon_width' which contains the width of the polygon in pixels")
 public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess {
 
 	private static final String AGG_COUNT_ATTRIBUTE_NAME = "agg_count";
