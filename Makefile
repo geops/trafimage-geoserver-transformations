@@ -14,7 +14,7 @@ package: build
 git-version:
 	./print-git-commit-hash.sh >$(GITVERSION_FILE)
 	@# update the copy of the file cached in mavens build directory
-	[ -d target/classes/ ] && cp $(GITVERSION_FILE) target/classes/
+	([ -d target/classes/ ] && cp $(GITVERSION_FILE) target/classes/) || true
 
 clean:
 	rm -f $(GITVERSION_FILE)
