@@ -12,6 +12,7 @@
 	<properties>
 		<geoserver.version>2.4.6</geoserver.version>
 		<geotools.version>10-SNAPSHOT</geotools.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<build>
@@ -20,9 +21,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>2.6</version>
-				<configuration>
-					<encoding>UTF-8</encoding>
-				</configuration>
 			</plugin>
 
 			<plugin>
