@@ -43,9 +43,8 @@ public class TrafimageTransformInfo {
             version = "unknown - not packaged";
         }
         return version;
-
 	}
-
+	
 	public String getGitVersion() {
         String gitVersion = getResourceContents("/trafimage-geoserver-transformations.gitversion");
 
