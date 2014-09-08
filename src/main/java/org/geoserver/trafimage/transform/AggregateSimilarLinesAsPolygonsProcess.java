@@ -169,14 +169,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		}
 		
 		// choose the drawing configuration
-		PolygonDrawingAlgorithm drawingAlgo = null;
-		if (widthScalingAlgorithm.equals("linear")) { 
-			drawingAlgo = new LinearPolygonDrawingAlgorithm();
-		} else if (widthScalingAlgorithm.equals("logarithmic")) {
-			drawingAlgo = new LogarithmicPolygonDrawingAlgorithm();
-		} else {
-			throw new ProcessException("Unknown scaling algorithm for widthScaling: "+widthScalingAlgorithm);
-		}
+		PolygonDrawingAlgorithm drawingAlgo = this.getPolygonDrawingAlgorithm(widthScalingAlgorithm);
 		drawingAlgo.setOffsetAttributeName(offsetAttributeName);
 		//drawingAlgo.setWidthAttributeName(widthAttributeName);
 		drawingAlgo.setMaxPolygonWidth(maxPolygonWidth);
@@ -254,7 +247,8 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 			LOGGER.info("Spend "+lineToPolygon.getTimeSpendInSeconds()+" seconds on just converting lines to polygons.");
 		}
 		
-		// sort the features so no wider polygon covers a smaller polygon. 
+		// sort the features so no wider polygon covers a smaller polygon. This may not be respected by the 
+		// renderer
 		final SimpleFeatureCollection sortedOutputCollection = this.sortCollection(outputCollection);
 
 		if (!debugSqlFile.equals("")) {
@@ -268,6 +262,21 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		LOGGER.fine("Returning "+sortedOutputCollection.size()+" polygons");
 		
 		return sortedOutputCollection;
+	}
+	
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
+	private PolygonDrawingAlgorithm getPolygonDrawingAlgorithm(final String algorithmName) {
+		if (algorithmName.equals("linear") || algorithmName.equals("lin")) { 
+			return new LinearPolygonDrawingAlgorithm();
+		} else if (algorithmName.equals("logarithmic") || algorithmName.equals("log")) {
+			return new LogarithmicPolygonDrawingAlgorithm();
+		} else {
+			throw new ProcessException("Unknown scaling algorithm for widthScaling: "+algorithmName);
+		}
 	}
 
 	
