@@ -26,6 +26,8 @@ should be available in the "Choose Process" select box. The names are
 * "gs:AggregateSimilarFeatures"
 * "gs:AggregateSimilarLinesAsPolygon"
 
+There is also a special "About Trafimage Rendering Transformations" page in "About & Status" 
+menu which lists the version of the extension installed.
 
 # Styling examples
 

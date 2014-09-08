@@ -64,6 +64,18 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+           <groupId>org.geoserver.web</groupId>
+           <artifactId>web-core</artifactId>
+           <classifier>tests</classifier>
+           <scope>test</scope>
+           <version>${geoserver.version}</version>
+        </dependency>
+        <dependency>
+           <groupId>org.geoserver.web</groupId>
+           <artifactId>web-demo</artifactId>
+           <version>${geoserver.version}</version>
+        </dependency>
+		<dependency>
 			<groupId>org.geoserver.extension</groupId>
 			<artifactId>wps-core</artifactId>
 			<version>${geoserver.version}</version>

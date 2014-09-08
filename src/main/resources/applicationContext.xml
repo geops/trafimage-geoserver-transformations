@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
-	<bean id="aggregateSimilarFeatures" class="org.geoserver.trafimage.transform.AggregateSimilarFeaturesProcess" />
-	<bean id="aggregateSimilarLinesAsPolygons" class="org.geoserver.trafimage.transform.AggregateSimilarLinesAsPolygonsProcess" />
+	<bean id="aggregateSimilarFeatures"
+		class="org.geoserver.trafimage.transform.AggregateSimilarFeaturesProcess" />
+	<bean id="aggregateSimilarLinesAsPolygons"
+		class="org.geoserver.trafimage.transform.AggregateSimilarLinesAsPolygonsProcess" />
+
+
+
+	<bean id="aboutTrafimageTransformPage" class="org.geoserver.web.MenuPageInfo">
+		<property name="id" value="trafimage.transform.about" />
+		<property name="titleKey" value="AboutTrafimageTransformPage.title" />
+		<property name="descriptionKey" value="AboutTrafimageTransformPage.description" />
+		<property name="componentClass"
+			value="org.geoserver.trafimage.transform.web.AboutTrafimageTransformPage" />
+		<property name="category" ref="aboutStatusCategory" />
+		<property name="icon" value="img/silk/rainbow.png" />
+		<property name="order" value="35" />
+	</bean>
+
 </beans>
