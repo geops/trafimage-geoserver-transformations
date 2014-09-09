@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.geotools.util.logging.Logging;
+import org.pegdown.PegDownProcessor;
 
 public class TrafimageTransformInfo {
 
@@ -47,10 +48,22 @@ public class TrafimageTransformInfo {
 	
 	public String getGitVersion() {
         String gitVersion = getResourceContents("/trafimage-geoserver-transformations.gitversion");
-
         if ((gitVersion==null) || (gitVersion=="")) {
             gitVersion = "<No git version information available>";
         }
         return gitVersion;
+	}
+	
+	private String getReadme() {
+        String readmeText = getResourceContents("/README.md");
+        if ((readmeText==null) || (readmeText=="")) {
+        	readmeText = "Readme is not available";
+        }
+        return readmeText;
+	}
+	
+	public String getReadmeHtml() {
+		PegDownProcessor processor = new PegDownProcessor();
+		return processor.markdownToHtml(this.getReadme());
 	}
 }

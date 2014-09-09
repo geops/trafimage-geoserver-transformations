@@ -10,6 +10,7 @@ public class AboutTrafimageTransformPage extends GeoServerBasePage {
 		TrafimageTransformInfo info = new TrafimageTransformInfo();
 		add(new Label("trafimageTransformVersion", info.getVersion()));
 		add(new Label("trafimageTransformGitVersion", info.getGitVersion()));
+		add(new Label("readme", info.getReadmeHtml()).setEscapeModelStrings(false));
 	}
 
 	public String getAjaxIndicatorMarkupId() {
