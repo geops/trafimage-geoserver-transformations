@@ -16,6 +16,8 @@ The generated JARs will be in the target/ directory.
 This extension depends on the WPS extension which needs to be installed first. See 
 http://docs.geoserver.org/stable/en/user/extensions/wps/install.html on this topic.
 
+
+
 To install this extension, drop all JARs to geoservers WEB-INF/lib/ directory and 
 restart geoserver.
 
@@ -25,6 +27,7 @@ should be available in the "Choose Process" select box. The names are
 
 * "gs:AggregateSimilarFeatures"
 * "gs:AggregateSimilarLinesAsPolygon"
+* "gs:AggregateAsLineStacks"
 
 There is also a special "About Trafimage Rendering Transformations" page in "About & Status" 
 menu which lists the version of the extension installed.
@@ -37,14 +40,17 @@ or in the source files.
 
 Make sure you have an index on the geometries as this will speed up the aggregation significantly.
 
-## AggregateSimilarFeatures:
+## AggregateSimilarFeatures
 
-![aggregatesimilarfeatures_1.png](examples/aggregatesimilarfeatures_1.png)
+... see examples directory.
 
-## AggregateSimilarLinesAsPolygon:
+## AggregateSimilarLinesAsPolygon
 
-![aggregatesimilarlinesaspolygons_1.png](examples/aggregatesimilarlinesaspolygons_1.png)
+... see examples directory.
 
+## AggregateAsLineStacks
+
+... see examples directory.
 
 # Development
 
