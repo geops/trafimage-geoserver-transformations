@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.geotools.util.logging.Logging;
-import org.pegdown.PegDownProcessor;
+import org.markdownj.MarkdownProcessor;
 
 public class TrafimageTransformInfo {
 
@@ -63,7 +63,7 @@ public class TrafimageTransformInfo {
 	}
 	
 	public String getReadmeHtml() {
-		PegDownProcessor processor = new PegDownProcessor();
-		return processor.markdownToHtml(this.getReadme());
+		MarkdownProcessor processor = new MarkdownProcessor();
+		return processor.markdown(this.getReadme());
 	}
 }
