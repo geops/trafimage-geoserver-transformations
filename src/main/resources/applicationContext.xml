@@ -5,7 +5,8 @@
 		class="org.geoserver.trafimage.transform.AggregateSimilarFeaturesProcess" />
 	<bean id="aggregateSimilarLinesAsPolygons"
 		class="org.geoserver.trafimage.transform.AggregateSimilarLinesAsPolygonsProcess" />
-
+	<bean id="aggregateAsLineStacks"
+		class="org.geoserver.trafimage.transform.AggregateAsLineStacksProcess" />
 
 
 	<bean id="aboutTrafimageTransformPage" class="org.geoserver.web.MenuPageInfo">

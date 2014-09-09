@@ -30,12 +30,11 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 
 
-
 @DescribeProcess(title = "AggregateSimilarLinesAsPolygon", description = "Aggregate similar Line Features by their geometry and additional columns. "
 		+ "Returns the distict Polygon geometries, the aggregated columns, an"
 		+ " additional column 'agg_count' holding the number of features in the aggregation"
 		+ " and the additional column 'polygon_width' which contains the width of the polygon in pixels")
-public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess {
+public class AggregateSimilarLinesAsPolygonsProcess extends VectorLineProcess implements GeoServerProcess {
 
 	private static final String AGG_COUNT_ATTRIBUTE_NAME = "agg_count";
 	private static final String POLYGON_WIDTH_ATTRIBUTE_NAME = "polygon_width";
@@ -70,17 +69,7 @@ public class AggregateSimilarLinesAsPolygonsProcess implements GeoServerProcess 
 		typeBuilder.add(POLYGON_WIDTH_ATTRIBUTE_NAME, Double.class);
 		return typeBuilder.buildFeatureType();
 	}
-	
-	/**
-	 * 
-	 * @param inputSchema
-	 */
-	private void checkInputGeometryType(final SimpleFeatureType inputSchema) {
-		GeometryDescriptor geomDescriptor = inputSchema.getGeometryDescriptor();
-		if (geomDescriptor.getType().getBinding() != LineString.class) {
-			throw new ProcessException("Inputgeometries are not Linestrings");
-		}
-	}
+
 	
 	/**
 	 * execute the transformation

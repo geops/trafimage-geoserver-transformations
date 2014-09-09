@@ -99,7 +99,6 @@ public class SimpleFeatureAggregator {
 		featureIt.setMeasuringEnabled(this.measuringEnabled);
 		final HashMap<Integer, SimpleFeature> featureMap = new HashMap<Integer,SimpleFeature>();
 		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
-		
 		try {
 			while (featureIt.hasNext()) {
 				final SimpleFeature feature = featureIt.next();
@@ -179,9 +178,9 @@ public class SimpleFeatureAggregator {
 			LOGGER.finer("Adding attribute "+attributeName+" to new SimpleFeatureType");
 			typeBuilder.add(attributeName, descriptor.getType().getClass());
 		}
-		LOGGER.finer("Adding attribute "+aggregateAttributeName+" to new SimpleFeatureType");
-		
+
 		// column to store the counts
+		LOGGER.finer("Adding attribute "+aggregateAttributeName+" to new SimpleFeatureType");
 		typeBuilder.add(aggregateAttributeName, Integer.class);
 		
 		return typeBuilder.buildFeatureType();

@@ -16,7 +16,29 @@ public class TrafimageTransformInfo {
 	public TrafimageTransformInfo() {
 	}
 	
-    private String getResourceContents(String resourceName) {
+    public String getGitVersion() {
+        String gitVersion = getResourceContents("/trafimage-geoserver-transformations.gitversion");
+        if ((gitVersion==null) || (gitVersion=="")) {
+            gitVersion = "<No git version information available>";
+        }
+        return gitVersion;
+	}
+
+    
+	private String getReadme() {
+        String readmeText = getResourceContents("/README.md");
+        if ((readmeText==null) || (readmeText=="")) {
+        	readmeText = "Readme is not available";
+        }
+        return readmeText;
+	}
+	
+	public String getReadmeHtml() {
+		MarkdownProcessor processor = new MarkdownProcessor();
+		return processor.markdown(this.getReadme());
+	}
+	
+	private String getResourceContents(String resourceName) {
         InputStream rs = getClass().getResourceAsStream(resourceName);
         if (rs==null) {
             return "";
@@ -36,34 +58,12 @@ public class TrafimageTransformInfo {
 			}
         }
     }
-
-    
+	
 	public String getVersion() {
         String version = getClass().getPackage().getImplementationVersion();
         if (version == null) {
             version = "unknown - not packaged";
         }
         return version;
-	}
-	
-	public String getGitVersion() {
-        String gitVersion = getResourceContents("/trafimage-geoserver-transformations.gitversion");
-        if ((gitVersion==null) || (gitVersion=="")) {
-            gitVersion = "<No git version information available>";
-        }
-        return gitVersion;
-	}
-	
-	private String getReadme() {
-        String readmeText = getResourceContents("/README.md");
-        if ((readmeText==null) || (readmeText=="")) {
-        	readmeText = "Readme is not available";
-        }
-        return readmeText;
-	}
-	
-	public String getReadmeHtml() {
-		MarkdownProcessor processor = new MarkdownProcessor();
-		return processor.markdown(this.getReadme());
 	}
 }

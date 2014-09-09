@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<StyledLayerDescriptor version="1.0.0"
+	xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd"
+	xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<NamedLayer>
+		<Name>g_stacker</Name>
+		<UserStyle>
+			<Title>AggregateSimilarLinesAsPolygons1</Title>
+			<Abstract>A sample style that AggregateSimilarLinesAsPolygons1
+			</Abstract>
+			<FeatureTypeStyle>
+				<Transformation>
+					<ogc:Function name="gs:AggregateAsLineStacks">
+						<ogc:Function name="parameter">
+							<ogc:Literal>collection</ogc:Literal>
+						</ogc:Function>
+
+						<ogc:Function name="parameter">
+							<ogc:Literal>attributes</ogc:Literal>
+							<ogc:Literal>klasse</ogc:Literal>
+						</ogc:Function>
+
+						<ogc:Function name="parameter">
+							<ogc:Literal>orderAttribute</ogc:Literal>
+							<ogc:Literal>ordering</ogc:Literal>
+						</ogc:Function>
+						<!-- <ogc:Function name="parameter"> <ogc:Literal>offsetAttribute</ogc:Literal> 
+							<ogc:Literal>rt_offset</ogc:Literal> </ogc:Function> -->
+						<ogc:Function name="parameter">
+							<ogc:Literal>minLineWidth</ogc:Literal>
+							<ogc:Literal>8</ogc:Literal>
+						</ogc:Function>
+						
+						<ogc:Function name="parameter">
+							<ogc:Literal>maxLineWidth</ogc:Literal>
+							<ogc:Literal>20</ogc:Literal>
+						</ogc:Function>
+						
+						<ogc:Function name="parameter">
+							<ogc:Literal>spacingBetweenStackEntries</ogc:Literal>
+							<ogc:Literal>1</ogc:Literal>
+						</ogc:Function>
+
+
+						<ogc:Function name="parameter">
+							<ogc:Literal>enableDurationMeasurement</ogc:Literal>
+							<ogc:Literal>false</ogc:Literal>
+						</ogc:Function>
+
+						<ogc:Function name="parameter">
+							<ogc:Literal>drawOnBothSides</ogc:Literal>
+							<ogc:Literal>true</ogc:Literal>
+						</ogc:Function>
+
+
+
+						<!-- the env-function allows access of the WMS url parameters -->
+						<ogc:Function name="parameter">
+							<ogc:Literal>outputBBOX</ogc:Literal>
+							<ogc:Function name="env">
+								<ogc:Literal>wms_bbox</ogc:Literal>
+							</ogc:Function>
+						</ogc:Function>
+						<ogc:Function name="parameter">
+							<ogc:Literal>outputWidth</ogc:Literal>
+							<ogc:Function name="env">
+								<ogc:Literal>wms_width</ogc:Literal>
+							</ogc:Function>
+						</ogc:Function>
+						<ogc:Function name="parameter">
+							<ogc:Literal>outputHeight</ogc:Literal>
+							<ogc:Function name="env">
+								<ogc:Literal>wms_height</ogc:Literal>
+							</ogc:Function>
+						</ogc:Function>
+					</ogc:Function>
+				</Transformation>
+				
+				<Rule>
+					<ogc:Filter>
+						<PropertyIsEqualTo>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+							<ogc:Literal>schotter</ogc:Literal>
+						</PropertyIsEqualTo>
+					</ogc:Filter>
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#dddd00</CssParameter>
+							<CssParameter name="stroke-width">
+								<ogc:PropertyName>line_width</ogc:PropertyName>
+							</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+					<TextSymbolizer>
+						<Label>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+						</Label>
+						<Font>
+							<CssParameter name="font-family">Arial</CssParameter>
+							<CssParameter name="font-size">12</CssParameter>
+							<CssParameter name="font-style">normal</CssParameter>
+							<CssParameter name="font-weight">bold</CssParameter>
+						</Font>
+						<LabelPlacement>
+							<LinePlacement />
+						</LabelPlacement>
+						<Fill>
+							<CssParameter name="fill">#222222</CssParameter>
+						</Fill>
+					</TextSymbolizer>
+
+				</Rule>
+
+				<Rule>
+					<ogc:Filter>
+						<PropertyIsEqualTo>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+							<ogc:Literal>befestigungen</ogc:Literal>
+						</PropertyIsEqualTo>
+					</ogc:Filter>
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#00FF00</CssParameter>
+							<CssParameter name="stroke-width">
+								<ogc:PropertyName>line_width</ogc:PropertyName>
+							</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+					<TextSymbolizer>
+						<Label>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+						</Label>
+						<Font>
+							<CssParameter name="font-family">Arial</CssParameter>
+							<CssParameter name="font-size">12</CssParameter>
+							<CssParameter name="font-style">normal</CssParameter>
+							<CssParameter name="font-weight">bold</CssParameter>
+						</Font>
+						<LabelPlacement>
+							<LinePlacement />
+						</LabelPlacement>
+						<Fill>
+							<CssParameter name="fill">#222222</CssParameter>
+						</Fill>
+					</TextSymbolizer>
+
+				</Rule>
+
+				<Rule>
+					<ogc:Filter>
+						<PropertyIsEqualTo>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+							<ogc:Literal>risse</ogc:Literal>
+						</PropertyIsEqualTo>
+					</ogc:Filter>
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#FF00FF</CssParameter>
+							<CssParameter name="stroke-width">
+								<ogc:PropertyName>line_width</ogc:PropertyName>
+							</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+					<TextSymbolizer>
+						<Label>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+						</Label>
+						<Font>
+							<CssParameter name="font-family">Arial</CssParameter>
+							<CssParameter name="font-size">12</CssParameter>
+							<CssParameter name="font-style">normal</CssParameter>
+							<CssParameter name="font-weight">bold</CssParameter>
+						</Font>
+						<LabelPlacement>
+							<LinePlacement />
+						</LabelPlacement>
+						<Fill>
+							<CssParameter name="fill">#222222</CssParameter>
+						</Fill>
+					</TextSymbolizer>
+
+				</Rule>
+
+				<Rule>
+					<ogc:Filter>
+						<PropertyIsEqualTo>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+							<ogc:Literal>andere</ogc:Literal>
+						</PropertyIsEqualTo>
+					</ogc:Filter>
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#00bbFF</CssParameter>
+							<CssParameter name="stroke-width">
+								<ogc:PropertyName>line_width</ogc:PropertyName>
+							</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+					<TextSymbolizer>
+						<Label>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+						</Label>
+						<Font>
+							<CssParameter name="font-family">Arial</CssParameter>
+							<CssParameter name="font-size">12</CssParameter>
+							<CssParameter name="font-style">normal</CssParameter>
+							<CssParameter name="font-weight">bold</CssParameter>
+						</Font>
+						<LabelPlacement>
+							<LinePlacement />
+						</LabelPlacement>
+						<Fill>
+							<CssParameter name="fill">#222222</CssParameter>
+						</Fill>
+					</TextSymbolizer>
+
+				</Rule>
+
+				<Rule>
+					<ogc:Filter>
+						<PropertyIsEqualTo>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+							<ogc:Literal>squat</ogc:Literal>
+						</PropertyIsEqualTo>
+					</ogc:Filter>
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#0F0FF0</CssParameter>
+							<CssParameter name="stroke-width">
+								<ogc:PropertyName>line_width</ogc:PropertyName>
+							</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+					<TextSymbolizer>
+						<Label>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+						</Label>
+						<Font>
+							<CssParameter name="font-family">Arial</CssParameter>
+							<CssParameter name="font-size">12</CssParameter>
+							<CssParameter name="font-style">normal</CssParameter>
+							<CssParameter name="font-weight">bold</CssParameter>
+						</Font>
+						<LabelPlacement>
+							<LinePlacement />
+						</LabelPlacement>
+						<Fill>
+							<CssParameter name="fill">#222222</CssParameter>
+						</Fill>
+					</TextSymbolizer>
+
+				</Rule>
+
+				<Rule>
+					<ogc:Filter>
+						<PropertyIsEqualTo>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+							<ogc:Literal>head_check</ogc:Literal>
+						</PropertyIsEqualTo>
+					</ogc:Filter>
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#CC6699</CssParameter>
+							<CssParameter name="stroke-width">
+								<ogc:PropertyName>line_width</ogc:PropertyName>
+							</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+					<TextSymbolizer>
+						<Label>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+						</Label>
+						<Font>
+							<CssParameter name="font-family">Arial</CssParameter>
+							<CssParameter name="font-size">12</CssParameter>
+							<CssParameter name="font-style">normal</CssParameter>
+							<CssParameter name="font-weight">bold</CssParameter>
+						</Font>
+						<LabelPlacement>
+							<LinePlacement />
+						</LabelPlacement>
+						<Fill>
+							<CssParameter name="fill">#222222</CssParameter>
+						</Fill>
+					</TextSymbolizer>
+
+				</Rule>
+
+				<Rule>
+					<ogc:Filter>
+						<PropertyIsEqualTo>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+							<ogc:Literal>gleislage</ogc:Literal>
+						</PropertyIsEqualTo>
+					</ogc:Filter>
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#0FF00F</CssParameter>
+							<CssParameter name="stroke-width">
+								<ogc:PropertyName>line_width</ogc:PropertyName>
+							</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+					<TextSymbolizer>
+						<Label>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+						</Label>
+						<Font>
+							<CssParameter name="font-family">Arial</CssParameter>
+							<CssParameter name="font-size">12</CssParameter>
+							<CssParameter name="font-style">normal</CssParameter>
+							<CssParameter name="font-weight">bold</CssParameter>
+						</Font>
+						<LabelPlacement>
+							<LinePlacement />
+						</LabelPlacement>
+						<Fill>
+							<CssParameter name="fill">#222222</CssParameter>
+						</Fill>
+					</TextSymbolizer>
+
+				</Rule>
+
+				<Rule>
+					<ogc:Filter>
+						<PropertyIsEqualTo>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+							<ogc:Literal>stoesse</ogc:Literal>
+						</PropertyIsEqualTo>
+					</ogc:Filter>
+					<LineSymbolizer>
+						<Stroke>
+							<CssParameter name="stroke">#F00FFF</CssParameter>
+							<CssParameter name="stroke-width">
+								<ogc:PropertyName>line_width</ogc:PropertyName>
+							</CssParameter>
+						</Stroke>
+					</LineSymbolizer>
+					<TextSymbolizer>
+						<Label>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+						</Label>
+						<Font>
+							<CssParameter name="font-family">Arial</CssParameter>
+							<CssParameter name="font-size">12</CssParameter>
+							<CssParameter name="font-style">normal</CssParameter>
+							<CssParameter name="font-weight">bold</CssParameter>
+						</Font>
+						<LabelPlacement>
+							<LinePlacement />
+						</LabelPlacement>
+						<Fill>
+							<CssParameter name="fill">#222222</CssParameter>
+						</Fill>
+					</TextSymbolizer>
+
+				</Rule>
+
+			</FeatureTypeStyle>
+		</UserStyle>
+	</NamedLayer>
+</StyledLayerDescriptor>
