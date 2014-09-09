@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.geoserver.trafimage.transform.util.DebugIO;
 import org.geoserver.trafimage.transform.util.MeasuredSimpleFeatureIterator;
 import org.geoserver.wps.gs.GeoServerProcess;
 import org.geotools.data.collection.ListFeatureCollection;
@@ -157,6 +158,11 @@ public class AggregateAsLineStacksProcess extends VectorLineProcess implements G
 							+ " This will be logged on the INFO level. "
 							+ " The default is Disabled (false).",
 							defaultValue = "false") boolean enableDurationMeasurement,
+					@DescribeParameter(name = "debugSqlFile", 
+							description = "Name of the file to write SQL insert statements of the generated polygons to."
+							+ " Other attributes will not be written."
+							+ "Leave unset to deactivate.",	
+							defaultValue = "") String debugSqlFile,
 					ProgressListener monitor
 			) throws ProcessException {
 		
@@ -228,12 +234,17 @@ public class AggregateAsLineStacksProcess extends VectorLineProcess implements G
 					}
 				} catch (IllegalArgumentException e) {
 					// possible cause: JTS: Invalid number of points in LineString (found 1 - must be 0 or >= 2)
-					LOGGER.warning("Ignoring possible illegal feature.");
+					LOGGER.warning("Ignoring possible illegal feature: " + e.getMessage());
 				}
 			}
 		}
 		
 		monitor.complete();
+		
+		if (!debugSqlFile.equals("")) {
+			LOGGER.warning("Writing debugSqlFile to "+debugSqlFile+". This should only be activated for debugging purposes.");
+			DebugIO.dumpCollectionToSQLFile(outputCollection, debugSqlFile, "stacked_lines");
+		}
 		
 		LOGGER.info("Returning a collection with "+outputCollection.size()+" features");
 		
