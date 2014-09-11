@@ -17,7 +17,6 @@ This extension depends on the WPS extension which needs to be installed first. S
 http://docs.geoserver.org/stable/en/user/extensions/wps/install.html on this topic.
 
 
-
 To install this extension, drop all JARs to geoservers WEB-INF/lib/ directory and 
 restart geoserver.
 
@@ -55,6 +54,8 @@ Make sure you have an index on the geometries as this will speed up the aggregat
 # Development
 
 ## Developing and Debugging using eclipse
+
+Using an IDE is highly recommended.
 
 * Load geoserver into eclipse using "File" -> "Import..". Import Geoserver as an "Existing Maven project", otherwise the WPS extension will not be available.
 * Load this project into eclipse. Also import as an "Existing Maven project".
