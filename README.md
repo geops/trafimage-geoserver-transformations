@@ -17,6 +17,7 @@ This extension depends on the WPS extension which needs to be installed first. S
 http://docs.geoserver.org/stable/en/user/extensions/wps/install.html on this topic.
 
 
+
 To install this extension, drop all JARs to geoservers WEB-INF/lib/ directory and 
 restart geoserver.
 
@@ -27,6 +28,7 @@ should be available in the "Choose Process" select box. The names are
 * "gs:AggregateSimilarFeatures"
 * "gs:AggregateSimilarLinesAsPolygon"
 * "gs:AggregateAsLineStacks"
+* "gs:MakeOffsettedLines"
 
 There is also a special "About Trafimage Rendering Transformations" page in "About & Status" 
 menu which lists the version of the extension installed.
@@ -51,11 +53,13 @@ Make sure you have an index on the geometries as this will speed up the aggregat
 
 ... see examples directory.
 
+## MakeOffsettedLines
+
+... see examples directory.
+
 # Development
 
 ## Developing and Debugging using eclipse
-
-Using an IDE is highly recommended.
 
 * Load geoserver into eclipse using "File" -> "Import..". Import Geoserver as an "Existing Maven project", otherwise the WPS extension will not be available.
 * Load this project into eclipse. Also import as an "Existing Maven project".
