@@ -6,6 +6,7 @@ MARKDOWNJ_VERSION=$(shell $(MVN) -o dependency:list | grep markdownj-core | cut 
 GITVERSION_FILE=src/main/resources/trafimage-geoserver-transformations.gitversion
 
 build: git-version readme
+	rm -f target/*.jar
 	$(MVN) -Dmaven.test.skip=true package
 	@# dependencies which are not already bundled in geoserver
 	cp $(M2_REPO)/repository/net/jpountz/lz4/lz4/$(LZ4_VERSION)/lz4-$(LZ4_VERSION).jar target/
