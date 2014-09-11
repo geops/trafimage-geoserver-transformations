@@ -34,7 +34,7 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
 @DescribeProcess(title = "AggregateAsLineStacks", description = "CIAO MAMMA GUARDA COME MI DIVERTO")
-public class AggregateAsLineStacksProcess extends VectorLineProcess implements GeoServerProcess {
+public class AggregateAsLineStacksProcess extends VectorProcess implements GeoServerProcess {
 
 	protected class FeatureOrderComparator implements Comparator<SimpleFeature> {
 
@@ -167,7 +167,7 @@ public class AggregateAsLineStacksProcess extends VectorLineProcess implements G
 			) throws ProcessException {
 		
 		final SimpleFeatureType inputFeatureType = collection.getSchema();
-		checkInputGeometryType(inputFeatureType);
+		this.assertInputGeometryType(inputFeatureType, LineString.class);
 		
 		if (minLineWidth<1) {
 			throw new ProcessException("minLineWidth has to be a positive value bigger than 0, but currently is "+minLineWidth);

@@ -34,7 +34,7 @@ import com.vividsolutions.jts.geom.Polygon;
 		+ "Returns the distict Polygon geometries, the aggregated columns, an"
 		+ " additional column 'agg_count' holding the number of features in the aggregation"
 		+ " and the additional column 'polygon_width' which contains the width of the polygon in pixels")
-public class AggregateSimilarLinesAsPolygonsProcess extends VectorLineProcess implements GeoServerProcess {
+public class AggregateSimilarLinesAsPolygonsProcess extends VectorProcess implements GeoServerProcess {
 
 	private static final String AGG_COUNT_ATTRIBUTE_NAME = "agg_count";
 	private static final String POLYGON_WIDTH_ATTRIBUTE_NAME = "polygon_width";
@@ -152,7 +152,7 @@ public class AggregateSimilarLinesAsPolygonsProcess extends VectorLineProcess im
 			) throws ProcessException {
 					
 		final SimpleFeatureType inputFeatureType = collection.getSchema();
-		checkInputGeometryType(inputFeatureType);
+		this.assertInputGeometryType(inputFeatureType, LineString.class);
 		
 		if (maxPolygonWidthFeatureCount<0) {
 			throw new ProcessException("maxPolygonWithFeatureCount has to be a positive value, but currently is "+maxPolygonWidthFeatureCount);
