@@ -28,10 +28,7 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.PropertyDescriptor;
 import org.opengis.util.ProgressListener;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.PrecisionModel;
 
 @DescribeProcess(title = "AggregateAsLineStacks", description = "CIAO MAMMA GUARDA COME MI DIVERTO")
 public class AggregateAsLineStacksProcess extends VectorProcess implements GeoServerProcess {
@@ -265,11 +262,9 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 		
 		// generate the offset
 		CurveBuilder curveBuilder = new CurveBuilder();
-		final Coordinate[] curveCoordinates = curveBuilder.buildOffsettedLine(line.getCoordinates(), offsetInMapUnits);
+		final LineString offsettedLine = curveBuilder.buildOffsettedLineString(line, offsetInMapUnits);
 		
 		// write the geometry
-		GeometryFactory geomFactory = new GeometryFactory(new PrecisionModel());
-		LineString offsettedLine = geomFactory.createLineString(curveCoordinates);
 		GeometryDescriptor geometryDescriptor = outputSchema.getGeometryDescriptor();
 		outputFeatureBuilder.set(geometryDescriptor.getName(), offsettedLine);
 		

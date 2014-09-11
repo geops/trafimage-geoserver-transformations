@@ -91,8 +91,8 @@ class LineToPolygonConverter extends MeasuredTime {
 			// NOTE: the first line may also be used as a base to generate the second line from. This
 			//       approach will lead to larger artifacts as small errors in rounded corners or line endings
 			//       in the first line will multiply in the second line.
-			final Coordinate[] cLine0 = this.curveBuilder.buildOffsettedLine(line.getCoordinates(), offsets[0]);
-			final Coordinate[] cLine1 = this.curveBuilder.buildOffsettedLine(line.getCoordinates(), offsets[1]);
+			final Coordinate[] cLine0 = this.curveBuilder.buildOffsettedCoordinates(line.getCoordinates(), offsets[0]);
+			final Coordinate[] cLine1 = this.curveBuilder.buildOffsettedCoordinates(line.getCoordinates(), offsets[1]);
 	
 			// use the two lines to build an polygon and close the open ends
 			final Coordinate[] cPolygon = new Coordinate[cLine0.length+cLine1.length+1];

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<StyledLayerDescriptor version="1.0.0"
+	xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd"
+	xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<NamedLayer>
+		<Name>hjkh</Name>
+		<UserStyle>
+			<Title>MakeOffsettedLines1</Title>
+			<Abstract>A sample style that MakeOffsettedLines1
+			</Abstract>
+			<FeatureTypeStyle>
+				<Transformation>
+					<ogc:Function name="gs:MakeOffsettedLines">
+						<ogc:Function name="parameter">
+							<ogc:Literal>collection</ogc:Literal>
+						</ogc:Function>
+
+						<ogc:Function name="parameter">
+							<ogc:Literal>offsetInPixels</ogc:Literal>
+							<ogc:Literal>10</ogc:Literal>
+						</ogc:Function>
+
+						<ogc:Function name="parameter">
+							<ogc:Literal>enableDurationMeasurement</ogc:Literal>
+							<ogc:Literal>true</ogc:Literal>
+						</ogc:Function>
+
+
+						<!-- the env-function allows access of the WMS url parameters -->
+						<ogc:Function name="parameter">
+							<ogc:Literal>outputBBOX</ogc:Literal>
+							<ogc:Function name="env">
+								<ogc:Literal>wms_bbox</ogc:Literal>
+							</ogc:Function>
+						</ogc:Function>
+						<ogc:Function name="parameter">
+							<ogc:Literal>outputWidth</ogc:Literal>
+							<ogc:Function name="env">
+								<ogc:Literal>wms_width</ogc:Literal>
+							</ogc:Function>
+						</ogc:Function>
+						<ogc:Function name="parameter">
+							<ogc:Literal>outputHeight</ogc:Literal>
+							<ogc:Function name="env">
+								<ogc:Literal>wms_height</ogc:Literal>
+							</ogc:Function>
+						</ogc:Function>
+					</ogc:Function>
+				</Transformation>
+
+				<Rule>
+					<TextSymbolizer>
+						<Label>
+							<ogc:PropertyName>klasse</ogc:PropertyName>
+						</Label>
+						<Font>
+							<CssParameter name="font-family">Arial</CssParameter>
+							<CssParameter name="font-size">12</CssParameter>
+							<CssParameter name="font-style">normal</CssParameter>
+							<CssParameter name="font-weight">bold</CssParameter>
+						</Font>
+						<LabelPlacement>
+							<LinePlacement />
+						</LabelPlacement>
+						<VendorOption name="followLine">true</VendorOption>
+						<Fill>
+							<CssParameter name="fill">#222222</CssParameter>
+						</Fill>
+					</TextSymbolizer>
+				</Rule>
+
+			</FeatureTypeStyle>
+		</UserStyle>
+	</NamedLayer>
+</StyledLayerDescriptor>

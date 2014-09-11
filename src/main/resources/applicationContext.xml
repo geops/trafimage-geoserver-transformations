@@ -7,7 +7,9 @@
 		class="org.geoserver.trafimage.transform.AggregateSimilarLinesAsPolygonsProcess" />
 	<bean id="aggregateAsLineStacks"
 		class="org.geoserver.trafimage.transform.AggregateAsLineStacksProcess" />
-
+	<bean id="makeOffsettedLines"
+		class="org.geoserver.trafimage.transform.MakeOffsettedLinesProcess" />
+		
 
 	<bean id="aboutTrafimageTransformPage" class="org.geoserver.web.MenuPageInfo">
 		<property name="id" value="trafimage.transform.about" />
