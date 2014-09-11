@@ -19,7 +19,7 @@ import org.opengis.util.ProgressListener;
 @DescribeProcess(title = "AggregateSimilarFeatures", description = "Aggregate similar Features by their geometry and additional columns. "
 				+ "Returns the distict geometries, the aggregated columns as well as an"
 				+ " additional column 'agg_count' holding the number of features in the aggregation")
-public class AggregateSimilarFeaturesProcess implements GeoServerProcess  {
+public class AggregateSimilarFeaturesProcess extends VectorProcess implements GeoServerProcess  {
 
 	private static final String AGG_COUNT_ATTRIBUTE_NAME = "agg_count";
 	
