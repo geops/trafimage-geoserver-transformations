@@ -1,8 +1,10 @@
-package org.geoserver.trafimage.transform;
+package org.geoserver.trafimage.transform.process;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import org.geoserver.trafimage.transform.CurveBuilder;
+import org.geoserver.trafimage.transform.MapUnits;
 import org.geoserver.trafimage.transform.util.MeasuredSimpleFeatureIterator;
 import org.geoserver.wps.gs.GeoServerProcess;
 import org.geotools.data.collection.ListFeatureCollection;

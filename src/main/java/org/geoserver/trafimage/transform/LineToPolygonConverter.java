@@ -52,7 +52,7 @@ import com.vividsolutions.jts.geom.PrecisionModel;
  * @author nico
  *
  */
-class LineToPolygonConverter extends MeasuredTime {
+public class LineToPolygonConverter extends MeasuredTime {
 
 	private double offset = 0.0;
 	private double width = 10.0; 

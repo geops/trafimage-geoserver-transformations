@@ -12,14 +12,14 @@ import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.operation.buffer.BufferParameters;
 import com.vividsolutions.jts.operation.buffer.OffsetCurveBuilder;
 
-class CurveBuilder {
+public class CurveBuilder {
 
 	private final OffsetCurveBuilder curveBuilder;
 	private final GeometryFactory geomFactory = new GeometryFactory(new PrecisionModel());
 	
 	private static final Logger LOGGER = Logging.getLogger(CurveBuilder.class);
 	
-	CurveBuilder() {
+	public CurveBuilder() {
 		BufferParameters bufferParameters = new BufferParameters();
 		bufferParameters.setEndCapStyle(BufferParameters.CAP_FLAT);
 		bufferParameters.setJoinStyle(BufferParameters.JOIN_ROUND);
@@ -48,7 +48,7 @@ class CurveBuilder {
 	 * @param lineOffset
 	 * @return
 	 */
-	Coordinate[] buildOffsettedCoordinates(final Coordinate[] coordinates, final double lineOffset) {
+	public Coordinate[] buildOffsettedCoordinates(final Coordinate[] coordinates, final double lineOffset) {
 		/*
 		 * The source for the curvebuilder is at 
 		 * http://sourceforge.net/p/jts-topo-suite/code/HEAD/tree/trunk/jts/java/src/com/vividsolutions/jts/operation/buffer/OffsetCurveBuilder.java#l142
@@ -79,7 +79,7 @@ class CurveBuilder {
 	 * @param lineOffset
 	 * @return
 	 */
-	LineString buildOffsettedLineString(final LineString linestring, final double lineOffset) {
+	public LineString buildOffsettedLineString(final LineString linestring, final double lineOffset) {
 		final Coordinate[] coordinates = this.buildOffsettedCoordinates(linestring.getCoordinates(), lineOffset);
 		final LineString outLineGeom = this.geomFactory.createLineString(coordinates);
 		return outLineGeom;

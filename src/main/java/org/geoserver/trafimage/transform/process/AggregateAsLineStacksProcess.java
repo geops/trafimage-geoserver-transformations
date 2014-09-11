@@ -1,4 +1,4 @@
-package org.geoserver.trafimage.transform;
+package org.geoserver.trafimage.transform.process;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,6 +9,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.geoserver.trafimage.transform.CurveBuilder;
+import org.geoserver.trafimage.transform.MapUnits;
+import org.geoserver.trafimage.transform.SimpleFeatureAggregator;
+import org.geoserver.trafimage.transform.SimpleFeatureHasher;
 import org.geoserver.trafimage.transform.util.DebugIO;
 import org.geoserver.trafimage.transform.util.MeasuredSimpleFeatureIterator;
 import org.geoserver.wps.gs.GeoServerProcess;

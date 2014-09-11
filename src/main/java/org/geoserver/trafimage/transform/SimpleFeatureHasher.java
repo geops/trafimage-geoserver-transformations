@@ -14,7 +14,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKBWriter;
 
-class SimpleFeatureHasher extends MeasuredTime {
+public class SimpleFeatureHasher extends MeasuredTime {
 
 	private boolean includeGeometry = true;
 	private HashSet<String> includedAttributes = new HashSet<String>();

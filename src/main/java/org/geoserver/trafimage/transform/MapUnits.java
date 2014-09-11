@@ -12,7 +12,7 @@ public class MapUnits {
 	 * @param pixelToConvert The number of pixel to convert to map units
 	 * @return
 	 */
-	static double pixelDistanceToMapUnits(final ReferencedEnvelope bbox, final int imageWidth, final int imageHeight, final double pixelToConvert) {
+	public static double pixelDistanceToMapUnits(final ReferencedEnvelope bbox, final int imageWidth, final int imageHeight, final double pixelToConvert) {
 		
 		final double pixelPerMuX =  bbox.getWidth() / (double) imageWidth;
 		final double pixelPerMuY =  bbox.getHeight() / (double) imageHeight;

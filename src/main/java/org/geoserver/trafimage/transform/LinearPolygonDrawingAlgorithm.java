@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 import org.opengis.feature.simple.SimpleFeature;
 
-class LinearPolygonDrawingAlgorithm extends PolygonDrawingAlgorithm {
+public class LinearPolygonDrawingAlgorithm extends PolygonDrawingAlgorithm {
 
 	public LinearPolygonDrawingAlgorithm() {
 	}
 
 	@Override
-	ArrayList<String> getAdditionalAggregationAttributes() {
+	public ArrayList<String> getAdditionalAggregationAttributes() {
 		ArrayList<String> attrs = new ArrayList<String>();
 		attrs.add(this.offsetAttributeName);
 		return attrs;

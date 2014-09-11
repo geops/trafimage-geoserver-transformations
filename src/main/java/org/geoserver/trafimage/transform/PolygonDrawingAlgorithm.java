@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.geotools.process.ProcessException;
 import org.opengis.feature.simple.SimpleFeature;
 
-abstract class PolygonDrawingAlgorithm {
+public abstract class PolygonDrawingAlgorithm {
 
 	/**
 	 * @deprecated
@@ -22,7 +22,7 @@ abstract class PolygonDrawingAlgorithm {
 		
 	}
 
-	abstract ArrayList<String> getAdditionalAggregationAttributes();
+	public abstract ArrayList<String> getAdditionalAggregationAttributes();
 	
 	/**
 	 * returns true when polygon should be centered on the line regardless of the offset specified

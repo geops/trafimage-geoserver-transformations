@@ -1,8 +1,14 @@
-package org.geoserver.trafimage.transform;
+package org.geoserver.trafimage.transform.process;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import org.geoserver.trafimage.transform.LineToPolygonConverter;
+import org.geoserver.trafimage.transform.LinearPolygonDrawingAlgorithm;
+import org.geoserver.trafimage.transform.LogarithmicPolygonDrawingAlgorithm;
+import org.geoserver.trafimage.transform.MapUnits;
+import org.geoserver.trafimage.transform.PolygonDrawingAlgorithm;
+import org.geoserver.trafimage.transform.SimpleFeatureAggregator;
 import org.geoserver.trafimage.transform.util.DebugIO;
 import org.geoserver.wps.gs.GeoServerProcess;
 import org.geotools.data.collection.ListFeatureCollection;

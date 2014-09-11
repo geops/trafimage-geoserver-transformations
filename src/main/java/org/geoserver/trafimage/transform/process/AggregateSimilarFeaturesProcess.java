@@ -1,5 +1,6 @@
-package org.geoserver.trafimage.transform;
+package org.geoserver.trafimage.transform.process;
 
+import org.geoserver.trafimage.transform.SimpleFeatureAggregator;
 import org.geoserver.wps.gs.GeoServerProcess;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.process.ProcessException;

@@ -2,13 +2,13 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="aggregateSimilarFeatures"
-		class="org.geoserver.trafimage.transform.AggregateSimilarFeaturesProcess" />
+		class="org.geoserver.trafimage.transform.process.AggregateSimilarFeaturesProcess" />
 	<bean id="aggregateSimilarLinesAsPolygons"
-		class="org.geoserver.trafimage.transform.AggregateSimilarLinesAsPolygonsProcess" />
+		class="org.geoserver.trafimage.transform.process.AggregateSimilarLinesAsPolygonsProcess" />
 	<bean id="aggregateAsLineStacks"
-		class="org.geoserver.trafimage.transform.AggregateAsLineStacksProcess" />
+		class="org.geoserver.trafimage.transform.process.AggregateAsLineStacksProcess" />
 	<bean id="makeOffsettedLines"
-		class="org.geoserver.trafimage.transform.MakeOffsettedLinesProcess" />
+		class="org.geoserver.trafimage.transform.process.MakeOffsettedLinesProcess" />
 		
 
 	<bean id="aboutTrafimageTransformPage" class="org.geoserver.web.MenuPageInfo">
