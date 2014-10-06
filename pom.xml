@@ -57,9 +57,9 @@
 
 	<repositories>
 		<repository>
-			<id>opengeo</id>
-			<name>opengeo</name>
-			<url>http://repo.opengeo.org</url>
+			<id>boundless</id>
+			<name>Boundless Maven Repository</name>
+			<url>http://repo.boundlessgeo.com/main</url>
 		</repository>
 	</repositories>
 
