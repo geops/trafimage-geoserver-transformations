@@ -10,8 +10,8 @@
 	<url>http://tickets.trafimage.geops.ch/issues/14080071</url>
 
 	<properties>
-		<geoserver.version>2.4.6</geoserver.version>
-		<geotools.version>10-SNAPSHOT</geotools.version>
+		<geoserver.version>2.4.8</geoserver.version>
+		<geotools.version>10.8</geotools.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
