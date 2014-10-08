@@ -51,7 +51,7 @@ public class MakeOffsettedLinesProcess extends VectorProcess implements GeoServe
 			
 			// processing parameters
 			@DescribeParameter(name = "offsetInPixels",
-					description = "The offset the lines should have in pixels. Negative an positive values contoll the direction of the displacement.",
+					description = "The offset the lines should have in pixels. Negative an positive values control the direction of the displacement.",
 					defaultValue = "0.0") Double offsetInPixels,
 
 					
