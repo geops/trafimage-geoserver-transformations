@@ -1,3 +1,10 @@
+/**
+ * Reading material:
+ *   http://wiki.deegree.org/deegreeWiki/HowToUseScaleHintAndScaleDenominator#What_is_the_ScaleHint.3F
+ *   
+ * Geoserver also offers a wms_scale_denominator SLD parameter
+ */
+
 package org.geoserver.trafimage.transform;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -18,7 +25,7 @@ public class MapUnits {
 		final double pixelPerMuY =  bbox.getHeight() / (double) imageHeight;
 		
 		// use the average of the two ratios in case a skewed WMS image is requested
-		return ((pixelPerMuX + pixelPerMuY) / 2) * pixelToConvert;
+		return ((pixelPerMuX + pixelPerMuY) / 2.0) * pixelToConvert;
 	}
 
 }

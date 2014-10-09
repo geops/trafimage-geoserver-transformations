@@ -151,7 +151,7 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 					@DescribeParameter(name = "outputWidth",
 							description = "Target image width in pixels. Should be set using the env function from the WMS-Parameters.", minValue = 1) Integer outputWidth,
 					@DescribeParameter(name = "outputHeight",
-							description = "Target image height in pixels. Should be set using the env function from the WMS-Parameters.", minValue = 1) Integer outputHeight,			
+							description = "Target image height in pixels. Should be set using the env function from the WMS-Parameters.", minValue = 1) Integer outputHeight,
 					
 					// --- other --------------------------------------
 					@DescribeParameter(name = "enableDurationMeasurement",
@@ -206,18 +206,44 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 		comparator.setOrderAttributeName(orderAttributeName);
 		for (List<SimpleFeature> stackFeatures: stacks.values()) {
 			Collections.sort(stackFeatures, comparator);
-	
-			double stackOffsetInPixels = spacingBetweenStackEntries;
+			double stackOffsetInPixels = (double)spacingBetweenStackEntries;
 			for(final SimpleFeature feature: stackFeatures) {
 				try {
 					// find the width of the line
-					int featureWidthInPixels = Math.min(
-							Math.max(minLineWidth, Integer.parseInt(feature.getAttribute(AGG_COUNT_ATTRIBUTE_NAME).toString())),
-							maxLineWidth);
-					//LOGGER.info("Line width: "+featureWidthInPixels+"px");
+					final int aggCount = Integer.parseInt(feature.getAttribute(AGG_COUNT_ATTRIBUTE_NAME).toString());
+					int featureWidthInPixels = Math.min( Math.max(minLineWidth, aggCount), maxLineWidth);
 					
-					double offsetInPixels = stackOffsetInPixels + (featureWidthInPixels / 2.0);
-					double offsetMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, offsetInPixels);
+					double offsetMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, stackOffsetInPixels);
+					double featureWidthInMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, featureWidthInPixels);
+					
+					if (drawOnBothSides) {
+						offsetMapUnits = offsetMapUnits + 
+								(featureWidthInMapUnits 
+										/ 2.0 /* on two sides*/ 
+										/ 2.0 /* middle of the line to be drawn */
+								);
+					} else {
+						offsetMapUnits = offsetMapUnits + 
+								(featureWidthInMapUnits 
+										/ 2.0 /* middle of the line to be drawn */
+								);
+					}
+					
+					/*
+					if (aggCount>2) {
+						LOGGER.info(
+								"aggCount: "+aggCount
+								+"; spacingBetweenStackEntries:"+(double)spacingBetweenStackEntries
+								+"; maxLineWidth: "+maxLineWidth
+								+"; minLineWidth: "+minLineWidth
+								+"; featureWidthInPixels: "+featureWidthInPixels+"px"
+								+"; featureWidthInMapUnits: "+featureWidthInMapUnits
+								+"; stackOffsetInPixels: "+stackOffsetInPixels
+								+"; offsetMapUnits: "+offsetMapUnits
+								+"; klasse_color: "+feature.getAttribute("klasse_color").toString()
+								);
+					}
+					*/
 					
 					if (drawOnBothSides) {
 						final SimpleFeature line1 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, offsetMapUnits, featureWidthInPixels / 2.0);
@@ -226,12 +252,12 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 						outputCollection.add(line1);
 						outputCollection.add(line2);
 						
-						stackOffsetInPixels = stackOffsetInPixels + (featureWidthInPixels / 2.0) + spacingBetweenStackEntries;
+						stackOffsetInPixels = stackOffsetInPixels + (featureWidthInPixels / 2.0) + (double)spacingBetweenStackEntries;
 					} else {
 						final SimpleFeature line1 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, offsetMapUnits, featureWidthInPixels);
 						outputCollection.add(line1);
 						
-						stackOffsetInPixels = stackOffsetInPixels + featureWidthInPixels + spacingBetweenStackEntries;
+						stackOffsetInPixels = stackOffsetInPixels + featureWidthInPixels + (double)spacingBetweenStackEntries;
 					}
 				} catch (IllegalArgumentException e) {
 					// possible cause: JTS: Invalid number of points in LineString (found 1 - must be 0 or >= 2)
