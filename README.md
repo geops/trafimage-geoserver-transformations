@@ -8,7 +8,7 @@ Run
 
     make build
     
-The generated JARs will be in the target/ directory.
+The generated JARs will be in the `target/` directory.
 
 
 ## Installing into Geoserver
@@ -16,10 +16,9 @@ The generated JARs will be in the target/ directory.
 This extension depends on the WPS extension which needs to be installed first. See 
 http://docs.geoserver.org/stable/en/user/extensions/wps/install.html on this topic.
 
-
-
-To install this extension, drop all JARs to geoservers WEB-INF/lib/ directory and 
-restart geoserver.
+To install this extension, drop all JARs of the `target` directory to geoservers WEB-INF/lib/ directory and 
+restart geoserver. The `target` directory will also contain the dependencies which are not already bundled with
+geoserver.
 
 To see if the installation was successful you may check if the rendering transformations 
 as WPS services. Just go to "Demos" -> "WPS request builder". The rendering transformations
