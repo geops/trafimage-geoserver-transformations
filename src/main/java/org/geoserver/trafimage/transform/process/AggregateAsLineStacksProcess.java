@@ -131,6 +131,12 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 							+ " The attribute must be of type integer."
 							+ " The smaller the value is, the closer the feature will be placed to the orignal line.", 
 							defaultValue = "") String orderAttributeName,
+					@DescribeParameter(name = "invertSidesAttribute", 
+							description = "The name attribute of the input collection which contains the boolean value for inverting the sides on which the stacks are drawn."
+							+ " True means the sides will be inverted, Null and False will not changes the placement of the stacks."
+							+ " The attribute will be included in the aggregation."
+							+ " The attribute must be of type boolean.",
+							defaultValue = "") String invertSidesAttributeName,
 					@DescribeParameter(name = "minLineWidth",
 							description = "The minimum width of a line in pixels.",
 							defaultValue = "8") Integer minLineWidth,
@@ -185,6 +191,9 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 		if (orderAttributeName != null && !orderAttributeName.equals("")) {
 			aggregationAttributes.add(orderAttributeName);
 		}
+		if (invertSidesAttributeName != null && !invertSidesAttributeName.equals("")) {
+			aggregationAttributes.add(invertSidesAttributeName);
+		}
 		
 		monitor.started();
 		
@@ -209,6 +218,21 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 			double stackOffsetInPixels = (double)spacingBetweenStackEntries;
 			for(final SimpleFeature feature: stackFeatures) {
 				try {
+					// side inversion
+					double inversionValue = 1.0;
+					if (invertSidesAttributeName != null && !invertSidesAttributeName.equals("")) {
+						final Object invertSidesAttributeValue = feature.getAttribute(invertSidesAttributeName);
+						if (invertSidesAttributeValue != null) {
+							final String invertSidesAttributeStringValue = invertSidesAttributeValue.toString();
+							if (invertSidesAttributeValue != null && Boolean.parseBoolean(invertSidesAttributeStringValue) 
+									|| invertSidesAttributeStringValue.equals("1") 
+									|| invertSidesAttributeStringValue.equals("t")
+									|| invertSidesAttributeStringValue.equals("T")) {
+								inversionValue = -1.0;
+							}
+						}
+					}	
+					
 					// find the width of the line
 					final int aggCount = Integer.parseInt(feature.getAttribute(AGG_COUNT_ATTRIBUTE_NAME).toString());
 					int featureWidthInPixels = Math.min( Math.max(minLineWidth, aggCount), maxLineWidth);
@@ -246,15 +270,18 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 					*/
 					
 					if (drawOnBothSides) {
-						final SimpleFeature line1 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, offsetMapUnits, featureWidthInPixels / 2.0);
-						final SimpleFeature line2 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, offsetMapUnits * -1.0, featureWidthInPixels / 2.0);
+						final SimpleFeature line1 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, 
+								offsetMapUnits * inversionValue, featureWidthInPixels / 2.0);
+						final SimpleFeature line2 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, 
+								offsetMapUnits * inversionValue * -1.0, featureWidthInPixels / 2.0);
 						
 						outputCollection.add(line1);
 						outputCollection.add(line2);
 						
 						stackOffsetInPixels = stackOffsetInPixels + (featureWidthInPixels / 2.0) + (double)spacingBetweenStackEntries;
 					} else {
-						final SimpleFeature line1 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, offsetMapUnits, featureWidthInPixels);
+						final SimpleFeature line1 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, 
+								offsetMapUnits * inversionValue, featureWidthInPixels);
 						outputCollection.add(line1);
 						
 						stackOffsetInPixels = stackOffsetInPixels + featureWidthInPixels + (double)spacingBetweenStackEntries;
