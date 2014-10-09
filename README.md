@@ -61,12 +61,32 @@ Make sure you have an index on the geometries as this will speed up the aggregat
 
 ## Developing and Debugging using eclipse
 
-* Load geoserver into eclipse using "File" -> "Import..". Import Geoserver as an "Existing Maven project", otherwise the WPS extension will not be available.
-* Load this project into eclipse. Also import as an "Existing Maven project".
-* Right-click geoservers importet "web-app" project. Go to "Properties". There add the project of the rendering transformations to "Project References".
-* Launch Geoserver by selecting "Run" -> "Java Application" in the right-click menu of the class src/test/java/org.geoserver/web/Start.java in the "web-app" project. The same should work for "Debug" -> "Java Application".
+### Loading geoserver including the WPS extension into eclipse
 
-There is also a guide for using eclipse with geoserver at http://docs.geoserver.org/latest/en/developer/eclipse-guide/ .
+* Enter geoservers src directory and run "mvn eclipse:eclipse"
+* Enter src/extension/wps and also run "mvn eclipse:eclipse"
+* Load geoserver into eclipse using the menu "File" -> "Import". There choose "General" -> "Exisiting projects into workspace". Enable recursive searching for projects to make sure the WPS extension is found by eclipse.
+
+After eclipse has build its workspace Right-click the "web-app" project and open "Properties" there you need to
+
+* make sure all required projects including the WPS projects have been added to the "Java Build Path". Click "Add" to see a list of missing projects of the current workspace.
+* make sure the WPS projects are also part of the "Project References".
+
+Geoserver can now be launched by right-clicking org.geoserver.web.Start in the "web-app"-project (src/test/java directory) and selecting "Run" -> "As Java application".
+
+In case geoserver raises lots of errors it is worth to give it the data directory of a working geoserver install. The offical docs recommend setting a GEOSERVER_DATA_DIRECTORY in the "Run/Debug settings", but this does not really seem to work. A more reliable way would be symlinking the data directory to replace src/web/app/src/main/webapp/data
+
+### Loading the rendering transformations into geoserver
+
+* Enter the directory of the source of the RT and run "mvn eclipse:eclipse".
+* Load the extension into eclipse using the menu "File" -> "Import". There choose "General" -> "Exisiting projects into workspace".
+
+After eclipse has rebuild its workspace Right-click the "web-app" project again and open "Properties" there you need to
+
+* make sure the rendering transformations project has been added to the "Java Build Path".
+* make sure the project is also part of the "Project References".
+
+You may now start geoserver again. The menu of the rendering transformations should now show up in the "About & Status" section of the GUI.
 
 ## Version information
 
