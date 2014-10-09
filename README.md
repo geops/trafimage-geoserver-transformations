@@ -37,7 +37,7 @@ menu which lists the version of the extension installed.
 
 For the SLD code for all examples see the examples directory. Documentation on the 
 parameters of the rendering transformations is available in the "WPS request builder"
-or in the source files.
+and in the source files.
 
 Make sure you have an index on the geometries as this will speed up the aggregation significantly.
 
@@ -87,6 +87,8 @@ After eclipse has rebuild its workspace Right-click the "web-app" project again 
 * make sure the project is also part of the "Project References".
 
 You may now start geoserver again. The menu of the rendering transformations should now show up in the "About & Status" section of the GUI.
+
+Changes to the projects `pom.xml` file require a new run of `mvn eclipse:eclipse` and refreshing the project inside eclipse.
 
 ## Version information
 
