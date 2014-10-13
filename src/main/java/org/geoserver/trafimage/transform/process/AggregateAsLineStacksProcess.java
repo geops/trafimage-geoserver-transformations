@@ -13,6 +13,8 @@ import org.geoserver.trafimage.transform.CurveBuilder;
 import org.geoserver.trafimage.transform.MapUnits;
 import org.geoserver.trafimage.transform.SimpleFeatureAggregator;
 import org.geoserver.trafimage.transform.SimpleFeatureHasher;
+import org.geoserver.trafimage.transform.script.AggregateAsLineStacksScript;
+import org.geoserver.trafimage.transform.script.ScriptException;
 import org.geoserver.trafimage.transform.util.DebugIO;
 import org.geoserver.trafimage.transform.util.MeasuredSimpleFeatureIterator;
 import org.geoserver.wps.gs.GeoServerProcess;
@@ -34,7 +36,7 @@ import org.opengis.util.ProgressListener;
 
 import com.vividsolutions.jts.geom.LineString;
 
-@DescribeProcess(title = "AggregateAsLineStacks", description = "CIAO MAMMA GUARDA COME MI DIVERTO")
+@DescribeProcess(title = "AggregateAsLineStacks", description = "AggregateAsLineStacks")
 public class AggregateAsLineStacksProcess extends VectorProcess implements GeoServerProcess {
 
 	protected class FeatureOrderComparator implements Comparator<SimpleFeature> {
@@ -150,6 +152,24 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 					@DescribeParameter(name = "spacingBetweenStackEntries",
 							description = "The spacing between lines in a stack as well as to the original line itself. Default is 0",
 							defaultValue = "0") Integer spacingBetweenStackEntries,
+							
+				    // --- javascript related parameters 
+					@DescribeParameter(name = "renderScript",
+							description="A javascript script to control the rendering of the features."
+							+" Bypasses minLineWidth and maxLineWidth."
+							+" For a more detailed documentation check the README.",
+							defaultValue = "") String renderScript,
+					@DescribeParameter(name = "scriptCustomVariable1",
+							description="A value which will be exposed in the script as a global variable with the name customVariable1."
+							+" The variable will only be available after the initial evaluation of the script, so it should only be used from the defined functions. Otherwise an \"undefined\" error will be raised."
+							+" Useful to pass SLD and WMS parameters to the script. For example \"wms_scale_denominator\"",
+							defaultValue = "") String scriptCustomVariable1,
+					@DescribeParameter(name = "scriptCustomVariable2",
+							description="A value which will be exposed in the script as a global variable with the name customVariable2."
+							+" The variable will only be available after the initial evaluation of the script, so it should only be used from the defined functions. Otherwise an \"undefined\" error will be raised."
+							+" Useful to pass SLD and WMS parameters to the script. For example \"wms_scale_denominator\"",
+							defaultValue = "") String scriptCustomVariable2,		
+							
 					
 					 // --- output image parameters --------------------------------------
 					@DescribeParameter(name = "outputBBOX", 
@@ -186,123 +206,160 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 			throw new ProcessException("spacingBetweenStackEntries has to be a positive value or 0, but currently is "+spacingBetweenStackEntries);
 		}
 		
-		// create a full list of attributes to aggregate by
-		final ArrayList<String> aggregationAttributes = ParameterHelper.splitAt(attributes, ",");
-		if (orderAttributeName != null && !orderAttributeName.equals("")) {
-			aggregationAttributes.add(orderAttributeName);
-		}
-		if (invertSidesAttributeName != null && !invertSidesAttributeName.equals("")) {
-			aggregationAttributes.add(invertSidesAttributeName);
-		}
+		AggregateAsLineStacksScript scriptRunner = null;
 		
-		monitor.started();
-		
-		// aggregate the features as simple lines for further processing
-		final SimpleFeatureAggregator aggregator = new SimpleFeatureAggregator(aggregationAttributes);
-		aggregator.setMeasuringEnabled(enableDurationMeasurement);
-		final SimpleFeatureCollection aggLinesCollection = aggregator.aggregate(collection, AGG_COUNT_ATTRIBUTE_NAME);
-		
-		// create hashes again, this time only respecting the geometry itself to allow grouping similar geometries to
-		// calculate the feature stacking
-		final HashMap<Integer, List<SimpleFeature>> stacks = this.createStacksOfSimilarGeometries(aggLinesCollection, enableDurationMeasurement);
-		
-		SimpleFeatureType outputSchema = buildOutputFeatureType(aggLinesCollection.getSchema(), WIDTH_ATTRIBUTE_NAME);
-		final ListFeatureCollection outputCollection = new ListFeatureCollection(outputSchema);
-		final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
-		
-		// build the offsetted lines
-		final FeatureOrderComparator comparator = new FeatureOrderComparator();
-		comparator.setOrderAttributeName(orderAttributeName);
-		for (List<SimpleFeature> stackFeatures: stacks.values()) {
-			Collections.sort(stackFeatures, comparator);
-			double stackOffsetInPixels = (double)spacingBetweenStackEntries;
-			for(final SimpleFeature feature: stackFeatures) {
+		try {
+			
+			if (renderScript != null && !renderScript.trim().equals("")) {
+				LOGGER.info("creating scriptRunner");
 				try {
-					// side inversion
-					double inversionValue = 1.0;
-					if (invertSidesAttributeName != null && !invertSidesAttributeName.equals("")) {
-						final Object invertSidesAttributeValue = feature.getAttribute(invertSidesAttributeName);
-						if (invertSidesAttributeValue != null) {
-							final String invertSidesAttributeStringValue = invertSidesAttributeValue.toString();
-							if (invertSidesAttributeValue != null && Boolean.parseBoolean(invertSidesAttributeStringValue) 
-									|| invertSidesAttributeStringValue.equals("1") 
-									|| invertSidesAttributeStringValue.equals("t")
-									|| invertSidesAttributeStringValue.equals("T")) {
-								inversionValue = -1.0;
-							}
-						}
-					}	
-					
-					// find the width of the line
-					final int aggCount = Integer.parseInt(feature.getAttribute(AGG_COUNT_ATTRIBUTE_NAME).toString());
-					int featureWidthInPixels = Math.min( Math.max(minLineWidth, aggCount), maxLineWidth);
-					
-					double offsetMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, stackOffsetInPixels);
-					double featureWidthInMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, featureWidthInPixels);
-					
-					if (drawOnBothSides) {
-						offsetMapUnits = offsetMapUnits + 
-								(featureWidthInMapUnits 
-										/ 2.0 /* on two sides*/ 
-										/ 2.0 /* middle of the line to be drawn */
-								);
-					} else {
-						offsetMapUnits = offsetMapUnits + 
-								(featureWidthInMapUnits 
-										/ 2.0 /* middle of the line to be drawn */
-								);
-					}
-					
-					/*
-					if (aggCount>2) {
-						LOGGER.info(
-								"aggCount: "+aggCount
-								+"; spacingBetweenStackEntries:"+(double)spacingBetweenStackEntries
-								+"; maxLineWidth: "+maxLineWidth
-								+"; minLineWidth: "+minLineWidth
-								+"; featureWidthInPixels: "+featureWidthInPixels+"px"
-								+"; featureWidthInMapUnits: "+featureWidthInMapUnits
-								+"; stackOffsetInPixels: "+stackOffsetInPixels
-								+"; offsetMapUnits: "+offsetMapUnits
-								+"; klasse_color: "+feature.getAttribute("klasse_color").toString()
-								);
-					}
-					*/
-					
-					if (drawOnBothSides) {
-						final SimpleFeature line1 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, 
-								offsetMapUnits * inversionValue, featureWidthInPixels / 2.0);
-						final SimpleFeature line2 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, 
-								offsetMapUnits * inversionValue * -1.0, featureWidthInPixels / 2.0);
-						
-						outputCollection.add(line1);
-						outputCollection.add(line2);
-						
-						stackOffsetInPixels = stackOffsetInPixels + (featureWidthInPixels / 2.0) + (double)spacingBetweenStackEntries;
-					} else {
-						final SimpleFeature line1 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, 
-								offsetMapUnits * inversionValue, featureWidthInPixels);
-						outputCollection.add(line1);
-						
-						stackOffsetInPixels = stackOffsetInPixels + featureWidthInPixels + (double)spacingBetweenStackEntries;
-					}
-				} catch (IllegalArgumentException e) {
-					// possible cause: JTS: Invalid number of points in LineString (found 1 - must be 0 or >= 2)
-					LOGGER.warning("Ignoring possible illegal feature: " + e.getMessage());
+					scriptRunner = new AggregateAsLineStacksScript(renderScript);
+					scriptRunner.registerVariable("customVariable1", scriptCustomVariable1);
+					scriptRunner.registerVariable("customVariable2", scriptCustomVariable2);
+				} catch (ScriptException e) {
+					throw new ProcessException(e.getMessage(), e);
 				}
+			}
+
+			// create a full list of attributes to aggregate by
+			final ArrayList<String> aggregationAttributes = ParameterHelper.splitAt(attributes, ",");
+			if (orderAttributeName != null && !orderAttributeName.equals("")) {
+				aggregationAttributes.add(orderAttributeName);
+			}
+			if (invertSidesAttributeName != null && !invertSidesAttributeName.equals("")) {
+				aggregationAttributes.add(invertSidesAttributeName);
+			}
+			
+			monitor.started();
+			
+			// aggregate the features as simple lines for further processing
+			final SimpleFeatureAggregator aggregator = new SimpleFeatureAggregator(aggregationAttributes);
+			aggregator.setMeasuringEnabled(enableDurationMeasurement);
+			final SimpleFeatureCollection aggLinesCollection = aggregator.aggregate(collection, AGG_COUNT_ATTRIBUTE_NAME);
+			
+			// create hashes again, this time only respecting the geometry itself to allow grouping similar geometries to
+			// calculate the feature stacking
+			final HashMap<Integer, List<SimpleFeature>> stacks = this.createStacksOfSimilarGeometries(aggLinesCollection, enableDurationMeasurement);
+			
+			SimpleFeatureType outputSchema = buildOutputFeatureType(aggLinesCollection.getSchema(), WIDTH_ATTRIBUTE_NAME);
+			final ListFeatureCollection outputCollection = new ListFeatureCollection(outputSchema);
+			final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
+			
+			// build the offsetted lines
+			final FeatureOrderComparator comparator = new FeatureOrderComparator();
+			comparator.setOrderAttributeName(orderAttributeName);
+			for (List<SimpleFeature> stackFeatures: stacks.values()) {
+				Collections.sort(stackFeatures, comparator);
+				double stackOffsetInPixels = (double)spacingBetweenStackEntries;
+				for(final SimpleFeature feature: stackFeatures) {
+					try {
+						// side inversion
+						double inversionValue = 1.0;
+						if (invertSidesAttributeName != null && !invertSidesAttributeName.equals("")) {
+							final Object invertSidesAttributeValue = feature.getAttribute(invertSidesAttributeName);
+							if (invertSidesAttributeValue != null) {
+								final String invertSidesAttributeStringValue = invertSidesAttributeValue.toString();
+								if (invertSidesAttributeValue != null && Boolean.parseBoolean(invertSidesAttributeStringValue) 
+										|| invertSidesAttributeStringValue.equals("1") 
+										|| invertSidesAttributeStringValue.equals("t")
+										|| invertSidesAttributeStringValue.equals("T")) {
+									inversionValue = -1.0;
+								}
+							}
+						}	
+						
+						// find the width of the line
+						final int aggCount = Integer.parseInt(feature.getAttribute(AGG_COUNT_ATTRIBUTE_NAME).toString());
+						int featureWidthInPixels = 0;
+						
+						if (scriptRunner != null) {
+							try {
+								double featureLength = 0.0;
+								Object geom = feature.getDefaultGeometry();
+								if (geom != null) {
+									LineString lineString = (LineString)geom;
+									featureLength = lineString.getLength();
+								}
+								featureWidthInPixels = scriptRunner.getFeatureWidth(featureLength, aggCount);
+							} catch (ScriptException e) {
+								throw new ProcessException(e);
+							}
+						} else {
+							featureWidthInPixels = Math.min( Math.max(minLineWidth, aggCount), maxLineWidth);
+						}
+						
+						double offsetMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, stackOffsetInPixels);
+						double featureWidthInMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, featureWidthInPixels);
+						
+						if (drawOnBothSides) {
+							offsetMapUnits = offsetMapUnits + 
+									(featureWidthInMapUnits 
+											/ 2.0 /* on two sides*/ 
+											/ 2.0 /* middle of the line to be drawn */
+									);
+						} else {
+							offsetMapUnits = offsetMapUnits + 
+									(featureWidthInMapUnits 
+											/ 2.0 /* middle of the line to be drawn */
+									);
+						}
+						
+						/*
+						if (aggCount>2) {
+							LOGGER.info(
+									"aggCount: "+aggCount
+									+"; spacingBetweenStackEntries:"+(double)spacingBetweenStackEntries
+									+"; maxLineWidth: "+maxLineWidth
+									+"; minLineWidth: "+minLineWidth
+									+"; featureWidthInPixels: "+featureWidthInPixels+"px"
+									+"; featureWidthInMapUnits: "+featureWidthInMapUnits
+									+"; stackOffsetInPixels: "+stackOffsetInPixels
+									+"; offsetMapUnits: "+offsetMapUnits
+									+"; klasse_color: "+feature.getAttribute("klasse_color").toString()
+									);
+						}
+						*/
+						
+						if (drawOnBothSides) {
+							final SimpleFeature line1 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, 
+									offsetMapUnits * inversionValue, featureWidthInPixels / 2.0);
+							final SimpleFeature line2 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, 
+									offsetMapUnits * inversionValue * -1.0, featureWidthInPixels / 2.0);
+							
+							outputCollection.add(line1);
+							outputCollection.add(line2);
+							
+							stackOffsetInPixels = stackOffsetInPixels + (featureWidthInPixels / 2.0) + (double)spacingBetweenStackEntries;
+						} else {
+							final SimpleFeature line1 = this.buildOffsettedLine(feature, featureBuilder, outputSchema, 
+									offsetMapUnits * inversionValue, featureWidthInPixels);
+							outputCollection.add(line1);
+							
+							stackOffsetInPixels = stackOffsetInPixels + featureWidthInPixels + (double)spacingBetweenStackEntries;
+						}
+					} catch (IllegalArgumentException e) {
+						// possible cause: JTS: Invalid number of points in LineString (found 1 - must be 0 or >= 2)
+						LOGGER.warning("Ignoring possible illegal feature: " + e.getMessage());
+					}
+				}
+			}
+			
+			monitor.complete();
+			
+			if (!debugSqlFile.equals("")) {
+				LOGGER.warning("Writing debugSqlFile to "+debugSqlFile+". This should only be activated for debugging purposes.");
+				DebugIO.dumpCollectionToSQLFile(outputCollection, debugSqlFile, "stacked_lines");
+			}
+			
+			LOGGER.info("Returning a collection with "+outputCollection.size()+" features");
+			
+			return outputCollection;
+		} finally {
+			if (scriptRunner != null) {
+				scriptRunner.terminate();
 			}
 		}
 		
-		monitor.complete();
-		
-		if (!debugSqlFile.equals("")) {
-			LOGGER.warning("Writing debugSqlFile to "+debugSqlFile+". This should only be activated for debugging purposes.");
-			DebugIO.dumpCollectionToSQLFile(outputCollection, debugSqlFile, "stacked_lines");
-		}
-		
-		LOGGER.info("Returning a collection with "+outputCollection.size()+" features");
-		
-		return outputCollection;
 	}
 	
 	/**

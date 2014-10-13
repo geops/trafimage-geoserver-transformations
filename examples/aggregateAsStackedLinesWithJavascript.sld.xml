@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<StyledLayerDescriptor version="1.0.0"
+  xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd"
+  xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc"
+  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <NamedLayer>
+    <Name>abweichungen_klassen</Name>
+    <UserStyle>
+      <Title>AggregateSimilarLinesAsPolygons1</Title>
+      <Abstract>A sample style that AggregateSimilarLinesAsPolygons1
+      </Abstract>
+      <FeatureTypeStyle>
+        <Transformation>
+          <ogc:Function name="gs:AggregateAsLineStacks">
+            <ogc:Function name="parameter">
+              <ogc:Literal>collection</ogc:Literal>
+            </ogc:Function>
+
+            <ogc:Function name="parameter">
+              <ogc:Literal>attributes</ogc:Literal>
+              <ogc:Literal>klasse,klasse_color,level</ogc:Literal>
+            </ogc:Function>
+<!--
+            <ogc:Function name="parameter">
+              <ogc:Literal>maxLineWidth</ogc:Literal>
+              <ogc:Literal>20</ogc:Literal>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>minLineWidth</ogc:Literal>
+              <ogc:Literal>8</ogc:Literal>
+            </ogc:Function>
+-->
+            <ogc:Function name="parameter">
+              <ogc:Literal>orderAttribute</ogc:Literal>
+              <ogc:Literal>klasse_order</ogc:Literal>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>drawOnBothSides</ogc:Literal>
+              <ogc:Literal>false</ogc:Literal>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>scriptCustomVariable1</ogc:Literal>
+              <ogc:Function name="env">
+                <ogc:Literal>wms_scale_denominator</ogc:Literal>
+              </ogc:Function>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>scriptCustomVariable2</ogc:Literal>
+              <ogc:Literal>jsdhfsfhj</ogc:Literal>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>renderScript</ogc:Literal>
+              <ogc:Literal>
+               
+              var maxLineWidth = 20;
+              var minLineWidth = 8;
+                
+              function getFeatureWith(featureLength, aggCount) {
+                console.log("featureLength="+featureLength
+                  +" aggCount="+aggCount
+                  +" wms_scale_denominator (customVariable1)="+customVariable1
+                  +" useless stuff (customVariable2)="+customVariable2
+                );
+
+                // throw "test error handling";
+                
+                var width = Math.min(Math.max(minLineWidth, aggCount), maxLineWidth);
+                return width;
+               }
+              </ogc:Literal>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>spacingBetweenStackEntries</ogc:Literal>
+              <ogc:Literal>0</ogc:Literal>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>invertSidesAttribute</ogc:Literal>
+              <ogc:Literal>invertsides</ogc:Literal>
+            </ogc:Function>
+
+            <ogc:Function name="parameter">
+              <ogc:Literal>outputBBOX</ogc:Literal>
+              <ogc:Function name="env">
+                <ogc:Literal>wms_bbox</ogc:Literal>
+              </ogc:Function>
+            </ogc:Function>
+            <ogc:Function name="parameter">
+              <ogc:Literal>outputWidth</ogc:Literal>
+              <ogc:Function name="env">
+                <ogc:Literal>wms_width</ogc:Literal>
+              </ogc:Function>
+            </ogc:Function>
+            <ogc:Function name="parameter">
+              <ogc:Literal>outputHeight</ogc:Literal>
+              <ogc:Function name="env">
+                <ogc:Literal>wms_height</ogc:Literal>
+              </ogc:Function>
+            </ogc:Function>
+
+          </ogc:Function>
+        </Transformation>
+        <Rule>
+          <ogc:Filter>
+            <ogc:PropertyIsEqualTo>
+              <ogc:PropertyName>level</ogc:PropertyName>
+              <ogc:Literal>1</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+          </ogc:Filter>
+          <MaxScaleDenominator>100000.0</MaxScaleDenominator>
+          <LineSymbolizer>
+            <Stroke>
+              <CssParameter name="stroke">
+                <ogc:PropertyName>klasse_color</ogc:PropertyName>
+              </CssParameter>
+              <CssParameter name="stroke-linecap">butt</CssParameter>
+              <CssParameter name="stroke-width">
+                <ogc:PropertyName>line_width</ogc:PropertyName>
+              </CssParameter>
+            </Stroke>
+          </LineSymbolizer>
+        </Rule>
+        <Rule>
+          <ogc:Filter>
+            <PropertyIsEqualTo>
+              <ogc:PropertyName>level</ogc:PropertyName>
+              <ogc:Literal>2</ogc:Literal>
+            </PropertyIsEqualTo>
+          </ogc:Filter>
+          <MinScaleDenominator>100000.0</MinScaleDenominator>
+          <LineSymbolizer>
+            <Stroke>
+              <CssParameter name="stroke">
+                <ogc:PropertyName>klasse_color</ogc:PropertyName>
+              </CssParameter>
+              <CssParameter name="stroke-linecap">butt</CssParameter>
+              <CssParameter name="stroke-width">
+                <ogc:PropertyName>line_width</ogc:PropertyName>
+              </CssParameter>
+            </Stroke>
+          </LineSymbolizer>
+        </Rule>
+
+       
+      </FeatureTypeStyle>
+
+    </UserStyle>
+  </NamedLayer>
+</StyledLayerDescriptor>

@@ -40,21 +40,107 @@ and in the source files.
 
 Make sure you have an index on the geometries as this will speed up the aggregation significantly.
 
-## AggregateSimilarFeatures
+## Scripting with Javascript
+
+Not all processes support javascript. For detailed info on a process see the "Processes" section.
+
+### Environment
+
+In the javascript environment the following objects are defined:
+
+The `console` object has the following methods:
+
+`log`: This method takes a String as argument and logs its value to the geoserver log on the "INFO" loglevel. Please do not leave too verbose logging calls in production code as these will slow down rendering significantly.
+
+`error`: This method takes a String as argument and logs its value to the geoserver log on the "ERROR" loglevel. Please do not leave too verbose logging calls in production code as these will slow down rendering significantly.
+
+
+## Processes
+
+### AggregateSimilarFeatures
+
+#### Javascript
+
+not supported
+
+#### Examples
 
 ... see examples directory.
 
-## AggregateSimilarLinesAsPolygon
+
+### AggregateSimilarLinesAsPolygon
+
+#### Javascript
+
+not supported
+
+#### Examples
 
 ... see examples directory.
 
-## AggregateAsLineStacks
+
+### AggregateAsLineStacks
+
+#### Javascript
+
+It is possible to pass a script to the rendering transformation using the `renderScript` parameter of the transformation.
+
+The script must define a `getFeatureWith` function. This function is called to get the width of a stack in pixels. The function recieves two parameters: the length of the line in map units (float value) and the number of features in the stack (integer value). The function must return a number.
+
+It is possible to pass two values from the SLD to the javascript using the `scriptCustomVariable1` and `scriptCustomVariable2` parameters of the rendering transformation. This will create the corresponding global javascript variables `customVariable1` and `customVariable2`. These variable will be created AFTER the initial evaluation of the script, so the should only be accessed from inside the functions called by the rendering transformation.
+
+Using these custom variables allows for example to pass the scale denominator to the script:
+
+            <ogc:Function name="parameter">
+              <ogc:Literal>scriptCustomVariable1</ogc:Literal>
+              <ogc:Function name="env">
+                <ogc:Literal>wms_scale_denominator</ogc:Literal>
+              </ogc:Function>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>scriptCustomVariable2</ogc:Literal>
+              <ogc:Literal>jsdhfsfhj</ogc:Literal>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>renderScript</ogc:Literal>
+              <ogc:Literal>
+               
+              var maxLineWidth = 20;
+              var minLineWidth = 8;
+                
+              function getFeatureWith(featureLength, aggCount) {
+                console.log("featureLength="+featureLength
+                  +" aggCount="+aggCount
+                  +" wms_scale_denominator (customVariable1)="+customVariable1
+                  +" useless stuff (customVariable2)="+customVariable2
+                );
+                
+                var width = Math.min(Math.max(minLineWidth, aggCount), maxLineWidth);
+                return width;
+               }
+              </ogc:Literal>
+            </ogc:Function>
+
+
+#### Examples
 
 ... see examples directory.
 
-## MakeOffsettedLines
+
+### MakeOffsettedLines
+
+#### Javascript
+
+not supported
+
+#### Examples
 
 ... see examples directory.
+
+
+
 
 # Development
 
