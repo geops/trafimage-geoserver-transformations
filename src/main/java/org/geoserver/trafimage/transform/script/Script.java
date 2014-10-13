@@ -109,6 +109,7 @@ class Script {
 	}
 	
 	/**
+	 * create a ScriptException from a RhinoException
 	 * 
 	 * @param e
 	 * @return
