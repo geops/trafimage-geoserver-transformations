@@ -12,6 +12,9 @@
 	<properties>
 		<geoserver.version>2.4.8</geoserver.version>
 		<geotools.version>10.8</geotools.version>
+		<lz4.version>1.2.0</lz4.version>
+		<rhino.version>1.7R4</rhino.version>
+		<markdownj.version>0.4</markdownj.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -128,17 +131,17 @@
 		<dependency>
 			<groupId>net.jpountz.lz4</groupId>
 			<artifactId>lz4</artifactId>
-			<version>1.2.0</version>
+			<version>${lz4.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.markdownj</groupId>
 			<artifactId>markdownj-core</artifactId>
-			<version>0.4</version>
+			<version>${markdownj.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mozilla</groupId>
 			<artifactId>rhino</artifactId>
-			<version>1.7R4</version>
+			<version>${rhino.version}</version>
 		</dependency>
 	</dependencies>
 

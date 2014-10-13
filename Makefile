@@ -4,9 +4,9 @@ M2_REPO=~/.m2
 #LZ4_VERSION=$(shell $(MVN) -o dependency:list | grep lz4 | cut -d ":" -f 4)
 #RHINO_VERSION=$(shell $(MVN) -o dependency:list | grep rhino | cut -d ":" -f 4)
 #MARKDOWNJ_VERSION=$(shell $(MVN) -o dependency:list | grep markdownj-core | cut -d ":" -f 4)
-LZ4_VERSION=1.2.0
-RHINO_VERSION=1.7R4
-MARKDOWNJ_VERSION=0.4
+LZ4_VERSION=$(shell grep "<lz4\.version>" pom.xml | cut -d ">" -f 2 | cut -d "<" -f 1)
+RHINO_VERSION=$(shell grep "<rhino\.version>" pom.xml | cut -d ">" -f 2 | cut -d "<" -f 1)
+MARKDOWNJ_VERSION=$(shell grep "<markdownj\.version>" pom.xml | cut -d ">" -f 2 | cut -d "<" -f 1)
 GITVERSION_FILE=src/main/resources/trafimage-geoserver-transformations.gitversion
 
 build: git-version readme
