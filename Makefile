@@ -10,12 +10,14 @@ MARKDOWNJ_VERSION=$(shell grep "<markdownj\.version>" pom.xml | cut -d ">" -f 2 
 GITVERSION_FILE=src/main/resources/trafimage-geoserver-transformations.gitversion
 
 build: git-version readme
-	rm -f target/*.jar
+	rm -f target/*.jar target/*.zip
 	$(MVN) -Dmaven.test.skip=true package
 	@# dependencies which are not already bundled in geoserver
 	cp $(M2_REPO)/repository/net/jpountz/lz4/lz4/$(LZ4_VERSION)/lz4-$(LZ4_VERSION).jar target/
 	cp $(M2_REPO)/repository/org/markdownj/markdownj-core/$(MARKDOWNJ_VERSION)/markdownj-core-$(MARKDOWNJ_VERSION).jar target/
 	cp $(M2_REPO)/repository/org/mozilla/rhino/$(RHINO_VERSION)/rhino-$(RHINO_VERSION).jar target/
+	@# build a zip-file containing al jars
+	cd target && zip all-jars.zip *.jar
 
 package: build
 
