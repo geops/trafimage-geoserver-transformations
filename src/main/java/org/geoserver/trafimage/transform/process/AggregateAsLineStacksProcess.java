@@ -13,6 +13,7 @@ import org.geoserver.trafimage.transform.CurveBuilder;
 import org.geoserver.trafimage.transform.MapUnits;
 import org.geoserver.trafimage.transform.SimpleFeatureAggregator;
 import org.geoserver.trafimage.transform.SimpleFeatureHasher;
+import org.geoserver.trafimage.transform.SimpleFeatureHelper;
 import org.geoserver.trafimage.transform.script.AggregateAsLineStacksScript;
 import org.geoserver.trafimage.transform.script.ScriptException;
 import org.geoserver.trafimage.transform.util.DebugIO;
@@ -76,6 +77,76 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 	
 	/**
 	 * 
+	 * @param lineIn
+	 * @param outputSchema
+	 * @param offsetInMapUnits
+	 * @return
+	 */
+	protected SimpleFeature buildOffsettedLine(final SimpleFeature lineIn, final SimpleFeatureBuilder outputFeatureBuilder, final SimpleFeatureType outputSchema, double offsetInMapUnits, double widthInPixels) {
+		outputFeatureBuilder.reset();
+		
+		final LineString line = (LineString) lineIn.getDefaultGeometry();
+		
+		// generate the offset
+		CurveBuilder curveBuilder = new CurveBuilder();
+		final LineString offsettedLine = curveBuilder.buildOffsettedLineString(line, offsetInMapUnits);
+		
+		// write the geometry
+		GeometryDescriptor geometryDescriptor = outputSchema.getGeometryDescriptor();
+		outputFeatureBuilder.set(geometryDescriptor.getName(), offsettedLine);
+		
+		// clone the original features attributes
+		final Collection<PropertyDescriptor> descriptors = outputSchema.getDescriptors();
+		for (PropertyDescriptor descriptor: descriptors) {
+			if (!(descriptor instanceof GeometryDescriptor)) {
+				Object value = lineIn.getAttribute(descriptor.getName());
+				if (value != null) {
+					outputFeatureBuilder.set(descriptor.getName(), value);
+				}
+			}
+		}
+		
+		// set the width
+		outputFeatureBuilder.set(WIDTH_ATTRIBUTE_NAME, widthInPixels);
+		SimpleFeature featureOut = outputFeatureBuilder.buildFeature(null);
+		return featureOut;
+	}
+	
+	/**
+	 * build the new featuretype for the output geometries
+	 * 
+	 * @param inputSchema
+	 * @return
+	 */
+	protected SimpleFeatureType buildOutputFeatureType(final SimpleFeatureType inputSchema, final String widthAttributeName) {
+		
+		final SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
+		typeBuilder.setName("stacked");
+		typeBuilder.setCRS(inputSchema.getCoordinateReferenceSystem());
+		
+		final GeometryDescriptor geomDescriptor = inputSchema.getGeometryDescriptor();
+		typeBuilder.add(geomDescriptor.getName().toString(), 
+				geomDescriptor.getType().getClass(), 
+				inputSchema.getCoordinateReferenceSystem());
+
+		// clone all other columns
+		final Collection<PropertyDescriptor> descriptors = inputSchema.getDescriptors();
+		for (PropertyDescriptor descriptor: descriptors) {
+			if (!(descriptor instanceof GeometryDescriptor)) {
+				LOGGER.finer("Adding descriptor "+descriptor.getName().toString()+" to new SimpleFeatureType");
+				typeBuilder.add(descriptor.getName().toString(), descriptor.getType().getClass());
+			}
+		}
+		
+		// column to store the widths
+		LOGGER.finer("Adding attribute "+widthAttributeName+" to new SimpleFeatureType");
+		typeBuilder.add(widthAttributeName, Double.class);
+		
+		return typeBuilder.buildFeatureType();
+	}
+	
+	/**
+	 * 
 	 * @param collection
 	 * @return
 	 */
@@ -108,6 +179,7 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 		}
 		return stacks;
 	}
+	
 	
 	/**
 	 * execute the transformation
@@ -254,19 +326,7 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 				for(final SimpleFeature feature: stackFeatures) {
 					try {
 						// side inversion
-						double inversionValue = 1.0;
-						if (invertSidesAttributeName != null && !invertSidesAttributeName.equals("")) {
-							final Object invertSidesAttributeValue = feature.getAttribute(invertSidesAttributeName);
-							if (invertSidesAttributeValue != null) {
-								final String invertSidesAttributeStringValue = invertSidesAttributeValue.toString();
-								if (invertSidesAttributeValue != null && Boolean.parseBoolean(invertSidesAttributeStringValue) 
-										|| invertSidesAttributeStringValue.equals("1") 
-										|| invertSidesAttributeStringValue.equals("t")
-										|| invertSidesAttributeStringValue.equals("T")) {
-									inversionValue = -1.0;
-								}
-							}
-						}	
+						final double inversionValue = getInversionValue(feature, invertSidesAttributeName);	
 						
 						// find the width of the line
 						final int aggCount = Integer.parseInt(feature.getAttribute(AGG_COUNT_ATTRIBUTE_NAME).toString());
@@ -362,74 +422,18 @@ public class AggregateAsLineStacksProcess extends VectorProcess implements GeoSe
 		
 	}
 	
-	/**
-	 * 
-	 * @param lineIn
-	 * @param outputSchema
-	 * @param offsetInMapUnits
-	 * @return
-	 */
-	protected SimpleFeature buildOffsettedLine(final SimpleFeature lineIn, final SimpleFeatureBuilder outputFeatureBuilder, final SimpleFeatureType outputSchema, double offsetInMapUnits, double widthInPixels) {
-		outputFeatureBuilder.reset();
-		
-		final LineString line = (LineString) lineIn.getDefaultGeometry();
-		
-		// generate the offset
-		CurveBuilder curveBuilder = new CurveBuilder();
-		final LineString offsettedLine = curveBuilder.buildOffsettedLineString(line, offsetInMapUnits);
-		
-		// write the geometry
-		GeometryDescriptor geometryDescriptor = outputSchema.getGeometryDescriptor();
-		outputFeatureBuilder.set(geometryDescriptor.getName(), offsettedLine);
-		
-		// clone the original features attributes
-		final Collection<PropertyDescriptor> descriptors = outputSchema.getDescriptors();
-		for (PropertyDescriptor descriptor: descriptors) {
-			if (!(descriptor instanceof GeometryDescriptor)) {
-				Object value = lineIn.getAttribute(descriptor.getName());
-				if (value != null) {
-					outputFeatureBuilder.set(descriptor.getName(), value);
-				}
-			}
-		}
-		
-		// set the width
-		outputFeatureBuilder.set(WIDTH_ATTRIBUTE_NAME, widthInPixels);
-		SimpleFeature featureOut = outputFeatureBuilder.buildFeature(null);
-		return featureOut;
-	}
-	
 	
 	/**
-	 * build the new featuretype for the output geometries
-	 * 
-	 * @param inputSchema
+	 * get a value which inverts the side on which the stack is drawn based on the 
+	 * value of the invertSidesAttribute of the feature
+	 * @param feature
+	 * @param invertSidesAttributeName
 	 * @return
 	 */
-	protected SimpleFeatureType buildOutputFeatureType(final SimpleFeatureType inputSchema, final String widthAttributeName) {
-		
-		final SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
-		typeBuilder.setName("stacked");
-		typeBuilder.setCRS(inputSchema.getCoordinateReferenceSystem());
-		
-		final GeometryDescriptor geomDescriptor = inputSchema.getGeometryDescriptor();
-		typeBuilder.add(geomDescriptor.getName().toString(), 
-				geomDescriptor.getType().getClass(), 
-				inputSchema.getCoordinateReferenceSystem());
-
-		// clone all other columns
-		final Collection<PropertyDescriptor> descriptors = inputSchema.getDescriptors();
-		for (PropertyDescriptor descriptor: descriptors) {
-			if (!(descriptor instanceof GeometryDescriptor)) {
-				LOGGER.finer("Adding descriptor "+descriptor.getName().toString()+" to new SimpleFeatureType");
-				typeBuilder.add(descriptor.getName().toString(), descriptor.getType().getClass());
-			}
+	private double getInversionValue(SimpleFeature feature, String invertSidesAttributeName) {
+		if (SimpleFeatureHelper.getBooleanValue(feature, invertSidesAttributeName, false)) {
+			return -1.0;
 		}
-		
-		// column to store the widths
-		LOGGER.finer("Adding attribute "+widthAttributeName+" to new SimpleFeatureType");
-		typeBuilder.add(widthAttributeName, Double.class);
-		
-		return typeBuilder.buildFeatureType();
+		return 1.0;
 	}
 }
