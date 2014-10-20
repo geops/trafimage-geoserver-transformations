@@ -26,7 +26,7 @@ public class TrafimageTransformInfo {
 
     
 	private String getReadme() {
-        String readmeText = getResourceContents("/README.md");
+        String readmeText = getResourceContents("/README.trafimage-geoserver-transformations.md");
         if ((readmeText==null) || (readmeText=="")) {
         	readmeText = "Readme is not available";
         }

@@ -22,7 +22,7 @@ build: git-version readme
 package: build
 
 readme:
-	cp README.md src/main/resources/README.md
+	cp README.md src/main/resources/README.trafimage-geoserver-transformations.md
 
 git-version:
 	./print-git-commit-hash.sh >$(GITVERSION_FILE)
@@ -30,5 +30,5 @@ git-version:
 	([ -d target/classes/ ] && cp $(GITVERSION_FILE) target/classes/) || true
 
 clean:
-	rm -f $(GITVERSION_FILE) src/main/resources/README.md
+	rm -f $(GITVERSION_FILE) src/main/resources/README.trafimage-geoserver-transformations.md
 	$(MVN) clean
