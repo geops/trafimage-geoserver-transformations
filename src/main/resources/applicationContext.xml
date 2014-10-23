@@ -8,7 +8,9 @@
 	<bean id="aggregateAsLineStacks"
 		class="org.geoserver.trafimage.transform.process.AggregateAsLineStacksProcess" />
 	<bean id="makeOffsettedLines"
-		class="org.geoserver.trafimage.transform.process.MakeOffsettedLinesProcess" />
+		class="org.geoserver.trafimage.transform.process.MakeOffsettedLinesProcess" />	
+	<bean id="lineStacks"
+		class="org.geoserver.trafimage.transform.process.LineStacksProcess" />
 		
 
 	<bean id="aboutTrafimageTransformPage" class="org.geoserver.web.MenuPageInfo">

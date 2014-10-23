@@ -3,15 +3,13 @@ package org.geoserver.trafimage.transform.process;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.geoserver.trafimage.transform.FeatureOrderComparator;
 import org.geoserver.trafimage.transform.MapUnits;
-import org.geoserver.trafimage.transform.SimpleFeatureAggregator;
 import org.geoserver.trafimage.transform.SimpleFeatureHasher;
-import org.geoserver.trafimage.transform.script.AggregateAsLineStacksScript;
+import org.geoserver.trafimage.transform.script.LineStacksScript;
 import org.geoserver.trafimage.transform.script.ScriptException;
 import org.geoserver.trafimage.transform.util.DebugIO;
 import org.geoserver.trafimage.transform.util.MeasuredSimpleFeatureIterator;
@@ -31,52 +29,14 @@ import org.opengis.util.ProgressListener;
 
 import com.vividsolutions.jts.geom.LineString;
 
-@DescribeProcess(title = "AggregateAsLineStacks", description = "AggregateAsLineStacks")
-public class AggregateAsLineStacksProcess extends AbstractStackProcess implements GeoServerProcess {
+@DescribeProcess(title = "LineStacksProcess", description = "LineStacksProcess")
+public class LineStacksProcess extends AbstractStackProcess implements GeoServerProcess {
 
-	
-	private static final String AGG_COUNT_ATTRIBUTE_NAME = "agg_count";
 	private static final String WIDTH_ATTRIBUTE_NAME = "line_width";
 	
-	private static final Logger LOGGER = Logging.getLogger(AggregateAsLineStacksProcess.class);
+	private static final Logger LOGGER = Logging.getLogger(LineStacksProcess.class);
 	
-	public AggregateAsLineStacksProcess() {
-	}
-		
-
-	/**
-	 * 
-	 * @param collection
-	 * @return
-	 */
-	protected HashMap<Integer, List<SimpleFeature>> createStacksOfSimilarGeometries(SimpleFeatureCollection collection, boolean enableDurationMeasurement) {
-		final SimpleFeatureHasher hasher = new SimpleFeatureHasher();
-		hasher.setMeasuringEnabled(enableDurationMeasurement);
-		hasher.setIncludeGeometry(true);
-		hasher.setIncludedAttributes(new HashSet<String>());
-
-		HashMap<Integer, List<SimpleFeature>> stacks = new HashMap<Integer, List<SimpleFeature>>();
-		final MeasuredSimpleFeatureIterator featureIt = new MeasuredSimpleFeatureIterator(collection.features());
-		try {
-			while (featureIt.hasNext()) {
-				final SimpleFeature feature = featureIt.next();
-				final int hash = hasher.getHash(feature);
-				
-				List<SimpleFeature> stackList = stacks.get(hash);
-				if (stackList == null) {
-					stackList = new ArrayList<SimpleFeature>();
-					stacks.put(hash, stackList);
-				}
-				stackList.add(feature);
-			}
-		} finally {
-			featureIt.close();
-		}
-		
-		if (hasher.isMeasuringEnabled()) {
-			LOGGER.info("Spend "+hasher.getTimeSpendInSeconds()+" seconds on just creating feature hashes to order line stacks.");
-		}
-		return stacks;
+	public LineStacksProcess() {
 	}
 	
 	
@@ -89,18 +49,15 @@ public class AggregateAsLineStacksProcess extends AbstractStackProcess implement
 	 * @return
 	 * @throws ProcessException
 	 */
-	@DescribeResult(name = "result", description = "Aggregated feature collection")
+	@DescribeResult(name = "result", description = "feature collection")
 	public SimpleFeatureCollection execute(
 					// -- process data -------------------------
 					@DescribeParameter(name = "collection", 
 						description = "Input feature collection") SimpleFeatureCollection collection,
 					
 					// -- processing parameters -----------------------------
-					@DescribeParameter(name = "attributes", 
-							description = "Comma-seperated string of attributes to include in the aggregation") String attributes,
 					@DescribeParameter(name = "orderAttribute", 
 							description = "The name attribute of the input collection which contains the value for the ordering of the line stacks."
-							+ " The attribute will be included in the aggregation."
 							+ " The attribute must be of type integer."
 							+ " The smaller the value is, the closer the feature will be placed to the orignal line.", 
 							defaultValue = "") String orderAttributeName,
@@ -110,12 +67,9 @@ public class AggregateAsLineStacksProcess extends AbstractStackProcess implement
 							+ " The attribute will be included in the aggregation."
 							+ " The attribute must be of type boolean.",
 							defaultValue = "") String invertSidesAttributeName,
-					@DescribeParameter(name = "minLineWidth",
+					@DescribeParameter(name = "lineWidth",
 							description = "The minimum width of a line in pixels.",
-							defaultValue = "8") Integer minLineWidth,
-					@DescribeParameter(name = "maxLineWidth",
-							description = "The maximum width of a line in pixels.",
-							defaultValue = "80") Integer maxLineWidth,
+							defaultValue = "8") Integer lineWidth,
 					@DescribeParameter(name = "drawOnBothSides",
 							description = "Draw the stacks on both sides of the line."
 							+ " Default: True",
@@ -167,24 +121,23 @@ public class AggregateAsLineStacksProcess extends AbstractStackProcess implement
 		final SimpleFeatureType inputFeatureType = collection.getSchema();
 		this.assertInputGeometryType(inputFeatureType, LineString.class);
 		
-		if (minLineWidth<1) {
-			throw new ProcessException("minLineWidth has to be a positive value bigger than 0, but currently is "+minLineWidth);
-		}
-		if (maxLineWidth<1) {
-			throw new ProcessException("maxLineWidth has to be a positive value bigger than 1, but currently is "+maxLineWidth);
+		if (lineWidth<1) {
+			throw new ProcessException("lineWidth has to be a positive value bigger than 0, but currently is "+lineWidth);
 		}
 		if (spacingBetweenStackEntries<0) {
 			throw new ProcessException("spacingBetweenStackEntries has to be a positive value or 0, but currently is "+spacingBetweenStackEntries);
 		}
 		
-		AggregateAsLineStacksScript scriptRunner = null;
+		SimpleFeatureType outputSchema = this.buildOutputFeatureType(inputFeatureType, WIDTH_ATTRIBUTE_NAME);
+		final ListFeatureCollection outputCollection = new ListFeatureCollection(outputSchema);
 		
+		LineStacksScript scriptRunner = null;
 		try {
 			
 			if (renderScript != null && !renderScript.trim().equals("")) {
 				LOGGER.info("creating scriptRunner");
 				try {
-					scriptRunner = new AggregateAsLineStacksScript(renderScript);
+					scriptRunner = new LineStacksScript(renderScript);
 					scriptRunner.registerVariable("customVariable1", scriptCustomVariable1);
 					scriptRunner.registerVariable("customVariable2", scriptCustomVariable2);
 				} catch (ScriptException e) {
@@ -192,30 +145,35 @@ public class AggregateAsLineStacksProcess extends AbstractStackProcess implement
 				}
 			}
 
-			// create a full list of attributes to aggregate by
-			final ArrayList<String> aggregationAttributes = ParameterHelper.splitAt(attributes, ",");
-			if (orderAttributeName != null && !orderAttributeName.equals("")) {
-				aggregationAttributes.add(orderAttributeName);
-			}
-			if (invertSidesAttributeName != null && !invertSidesAttributeName.equals("")) {
-				aggregationAttributes.add(invertSidesAttributeName);
-			}
-			
 			monitor.started();
 			
-			// aggregate the features as simple lines for further processing
-			final SimpleFeatureAggregator aggregator = new SimpleFeatureAggregator(aggregationAttributes);
-			aggregator.setMeasuringEnabled(enableDurationMeasurement);
-			final SimpleFeatureCollection aggLinesCollection = aggregator.aggregate(collection, AGG_COUNT_ATTRIBUTE_NAME);
+			// create hashes to find similar geometries
+			SimpleFeatureHasher hasher = new SimpleFeatureHasher();
+			hasher.setIncludeGeometry(true);
+			final HashMap<Integer, ArrayList<SimpleFeature>> stacks = new HashMap<Integer, ArrayList<SimpleFeature>>();
+			final MeasuredSimpleFeatureIterator featureIt = new MeasuredSimpleFeatureIterator(collection.features());
+			featureIt.setMeasuringEnabled(enableDurationMeasurement);
+			try {
+				while (featureIt.hasNext()) {
+					final SimpleFeature feature = featureIt.next();
+					final int hash = hasher.getHash(feature);
+					
+					if (!stacks.containsKey(hash)) {
+						stacks.put(hash, new ArrayList<SimpleFeature>());
+					}
+					stacks.get(hash).add(feature);
+				}
+			} finally {
+				featureIt.close(); // closes the underlying database query, ...  
+			}
+			if (enableDurationMeasurement) {
+				LOGGER.info("Spend "+featureIt.getTimeSpendInSeconds()+" seconds on just reading "
+						+ collection.size()
+						+ " features from the datasource.");
+			}
 			
-			// create hashes again, this time only respecting the geometry itself to allow grouping similar geometries to
-			// calculate the feature stacking
-			final HashMap<Integer, List<SimpleFeature>> stacks = this.createStacksOfSimilarGeometries(aggLinesCollection, enableDurationMeasurement);
-			
-			SimpleFeatureType outputSchema = buildOutputFeatureType(aggLinesCollection.getSchema(), WIDTH_ATTRIBUTE_NAME);
-			final ListFeatureCollection outputCollection = new ListFeatureCollection(outputSchema);
 			final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
-			
+
 			// build the offsetted lines
 			final FeatureOrderComparator comparator = new FeatureOrderComparator();
 			comparator.setOrderAttributeName(orderAttributeName);
@@ -223,12 +181,9 @@ public class AggregateAsLineStacksProcess extends AbstractStackProcess implement
 				Collections.sort(stackFeatures, comparator);
 				double stackOffsetInPixels = (double)spacingBetweenStackEntries;
 				for(final SimpleFeature feature: stackFeatures) {
-					try {
-
+					try {		
 						// find the width of the line
-						final int aggCount = Integer.parseInt(feature.getAttribute(AGG_COUNT_ATTRIBUTE_NAME).toString());
-						int featureWidthInPixels = 0;
-						
+						int featureWidthInPixels = lineWidth;
 						if (scriptRunner != null) {
 							try {
 								double featureLength = 0.0;
@@ -237,12 +192,10 @@ public class AggregateAsLineStacksProcess extends AbstractStackProcess implement
 									LineString lineString = (LineString)geom;
 									featureLength = lineString.getLength();
 								}
-								featureWidthInPixels = scriptRunner.getFeatureWidth(featureLength, aggCount);
+								featureWidthInPixels = scriptRunner.getFeatureWidth(featureLength);
 							} catch (ScriptException e) {
 								throw new ProcessException(e);
 							}
-						} else {
-							featureWidthInPixels = Math.min( Math.max(minLineWidth, aggCount), maxLineWidth);
 						}
 						
 						double baseOffsetMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, stackOffsetInPixels);
@@ -277,7 +230,7 @@ public class AggregateAsLineStacksProcess extends AbstractStackProcess implement
 			}
 			
 			monitor.complete();
-			
+						
 			if (!debugSqlFile.equals("")) {
 				LOGGER.warning("Writing debugSqlFile to "+debugSqlFile+". This should only be activated for debugging purposes.");
 				DebugIO.dumpCollectionToSQLFile(outputCollection, debugSqlFile, "stacked_lines");
@@ -291,7 +244,7 @@ public class AggregateAsLineStacksProcess extends AbstractStackProcess implement
 				scriptRunner.terminate();
 			}
 		}
-		
 	}
 	
+
 }
