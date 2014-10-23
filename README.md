@@ -140,6 +140,53 @@ not supported
 ... see examples directory.
 
 
+### LineStacks
+
+#### Javascript
+
+It is possible to pass a script to the rendering transformation using the `renderScript` parameter of the transformation.
+
+The script must define a `getFeatureWith` function. This function is called to get the width of a stack in pixels. The function recieves two parameters: the length of the line in map units (float value). The function must return a number.
+
+It is possible to pass two values from the SLD to the javascript using the `scriptCustomVariable1` and `scriptCustomVariable2` parameters of the rendering transformation. This will create the corresponding global javascript variables `customVariable1` and `customVariable2`. These variable will be created AFTER the initial evaluation of the script, so the should only be accessed from inside the functions called by the rendering transformation.
+
+Using these custom variables allows for example to pass the scale denominator to the script:
+
+            <ogc:Function name="parameter">
+              <ogc:Literal>scriptCustomVariable1</ogc:Literal>
+              <ogc:Function name="env">
+                <ogc:Literal>wms_scale_denominator</ogc:Literal>
+              </ogc:Function>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>scriptCustomVariable2</ogc:Literal>
+              <ogc:Literal>jsdhfsfhj</ogc:Literal>
+            </ogc:Function>
+            
+            <ogc:Function name="parameter">
+              <ogc:Literal>renderScript</ogc:Literal>
+              <ogc:Literal>
+               
+              var maxLineWidth = 20;
+              var minLineWidth = 8;
+                
+              function getFeatureWith(featureLength) {
+                console.log("featureLength="+featureLength
+                  +" wms_scale_denominator (customVariable1)="+customVariable1
+                  +" useless stuff (customVariable2)="+customVariable2
+                );
+                
+                var width = Math.floor(Math.random()*6);
+                return width;
+               }
+              </ogc:Literal>
+            </ogc:Function>
+
+
+#### Examples
+
+... see examples directory.
 
 
 # Development
