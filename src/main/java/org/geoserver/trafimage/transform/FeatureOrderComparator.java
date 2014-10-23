@@ -1,12 +1,23 @@
 package org.geoserver.trafimage.transform;
 
 import java.util.Comparator;
+import java.util.logging.Logger;
 
+import org.geoserver.trafimage.transform.process.LineStacksProcess;
+import org.geotools.util.logging.Logging;
 import org.opengis.feature.simple.SimpleFeature;
 
 
+/**
+ * compares features by an integer attribute
+ * 
+ * @author nico
+ *
+ */
 public class FeatureOrderComparator implements Comparator<SimpleFeature> {
 
+	private static final Logger LOGGER = Logging.getLogger(FeatureOrderComparator.class);
+	
 	private String orderAttributeName;
 	
 	public int compare(SimpleFeature f0, SimpleFeature f1) {
@@ -23,8 +34,10 @@ public class FeatureOrderComparator implements Comparator<SimpleFeature> {
 		if (value == null) {
 			return 0;
 		}
-		int orderValue = Integer.parseInt(value.toString());
-		return orderValue;
+		if (value instanceof Integer) {
+			return (Integer)value;
+		}
+		throw new IllegalArgumentException("Can not compare values of attributes of the type "+value.getClass().getCanonicalName());
 	}
 	
 	public void setOrderAttributeName(final String orderAttributeName) {

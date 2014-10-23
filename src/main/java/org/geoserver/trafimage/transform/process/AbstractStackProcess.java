@@ -62,6 +62,8 @@ abstract class AbstractStackProcess extends VectorProcess {
 	/**
 	 * create the new drawable lines and add them to the output collection
 	 *
+	 * TODO: needs refactoring to reduce the number of arguments
+	 *
 	 * @param outputCollection
 	 * @param featureBuilder
 	 * @param originalFeature
