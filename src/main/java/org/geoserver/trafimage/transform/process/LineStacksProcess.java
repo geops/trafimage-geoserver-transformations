@@ -148,12 +148,13 @@ public class LineStacksProcess extends AbstractStackProcess implements GeoServer
 			monitor.started();
 			
 			// create hashes to find similar geometries
-			SimpleFeatureHasher hasher = new SimpleFeatureHasher();
-			hasher.setIncludeGeometry(true);
-			final HashMap<Integer, ArrayList<SimpleFeature>> stacks = new HashMap<Integer, ArrayList<SimpleFeature>>();
 			final MeasuredSimpleFeatureIterator featureIt = new MeasuredSimpleFeatureIterator(collection.features());
 			featureIt.setMeasuringEnabled(enableDurationMeasurement);
 			try {
+			    SimpleFeatureHasher hasher = new SimpleFeatureHasher();
+			    hasher.setIncludeGeometry(true);
+			    final HashMap<Integer, ArrayList<SimpleFeature>> stacks = new HashMap<Integer, ArrayList<SimpleFeature>>();
+
 				while (featureIt.hasNext()) {
 					final SimpleFeature feature = featureIt.next();
 					final int hash = hasher.getHash(feature);
@@ -163,70 +164,74 @@ public class LineStacksProcess extends AbstractStackProcess implements GeoServer
 					}
 					stacks.get(hash).add(feature);
 				}
+
+
+                if (enableDurationMeasurement) {
+                    LOGGER.info("Spend "+featureIt.getTimeSpendInSeconds()+" seconds on just reading "
+                            + collection.size()
+                            + " features from the datasource.");
+                }
+
+                final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
+
+
+                // build the offsetted lines
+                final FeatureOrderComparator comparator = new FeatureOrderComparator();
+                comparator.setOrderAttributeName(orderAttributeName);
+                for (List<SimpleFeature> stackFeatures: stacks.values()) {
+                    Collections.sort(stackFeatures, comparator);
+                    double stackOffsetInPixels = (double)spacingBetweenStackEntries;
+                    for(final SimpleFeature feature: stackFeatures) {
+                        try {		
+                            // find the width of the line
+                            int featureWidthInPixels = lineWidth;
+                            if (scriptRunner != null) {
+                                try {
+                                    double featureLength = 0.0;
+                                    Object geom = feature.getDefaultGeometry();
+                                    if (geom != null) {
+                                        LineString lineString = (LineString)geom;
+                                        featureLength = lineString.getLength();
+                                    }
+                                    featureWidthInPixels = scriptRunner.getFeatureWidth(featureLength);
+                                } catch (ScriptException e) {
+                                    throw new ProcessException(e);
+                                }
+                            }
+                            
+                            double baseOffsetMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, stackOffsetInPixels);
+                            double featureWidthInMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, featureWidthInPixels);
+                            double offsetMapUnits = calculateOffsetInMapUnits(baseOffsetMapUnits, featureWidthInMapUnits,  drawOnBothSides);
+                            
+                            /*
+                            if (aggCount>2) {
+                                LOGGER.info(
+                                        "aggCount: "+aggCount
+                                        +"; spacingBetweenStackEntries:"+(double)spacingBetweenStackEntries
+                                        +"; maxLineWidth: "+maxLineWidth
+                                        +"; minLineWidth: "+minLineWidth
+                                        +"; featureWidthInPixels: "+featureWidthInPixels+"px"
+                                        +"; featureWidthInMapUnits: "+featureWidthInMapUnits
+                                        +"; stackOffsetInPixels: "+stackOffsetInPixels
+                                        +"; offsetMapUnits: "+offsetMapUnits
+                                        +"; klasse_color: "+feature.getAttribute("klasse_color").toString()
+                                        );
+                            }
+                            */
+                            
+                            stackOffsetInPixels = addDrawableLines(outputCollection, featureBuilder, feature, 
+                                    outputSchema, offsetMapUnits, featureWidthInPixels, stackOffsetInPixels, spacingBetweenStackEntries,
+                                    drawOnBothSides, invertSidesAttributeName, WIDTH_ATTRIBUTE_NAME);
+                            
+                        } catch (IllegalArgumentException e) {
+                            // possible cause: JTS: Invalid number of points in LineString (found 1 - must be 0 or >= 2)
+                            LOGGER.warning("Ignoring possible illegal feature: " + e.getMessage());
+                        }
+                    }
+                }
+
 			} finally {
 				featureIt.close(); // closes the underlying database query, ...  
-			}
-			if (enableDurationMeasurement) {
-				LOGGER.info("Spend "+featureIt.getTimeSpendInSeconds()+" seconds on just reading "
-						+ collection.size()
-						+ " features from the datasource.");
-			}
-			
-			final SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(outputSchema);
-
-			// build the offsetted lines
-			final FeatureOrderComparator comparator = new FeatureOrderComparator();
-			comparator.setOrderAttributeName(orderAttributeName);
-			for (List<SimpleFeature> stackFeatures: stacks.values()) {
-				Collections.sort(stackFeatures, comparator);
-				double stackOffsetInPixels = (double)spacingBetweenStackEntries;
-				for(final SimpleFeature feature: stackFeatures) {
-					try {		
-						// find the width of the line
-						int featureWidthInPixels = lineWidth;
-						if (scriptRunner != null) {
-							try {
-								double featureLength = 0.0;
-								Object geom = feature.getDefaultGeometry();
-								if (geom != null) {
-									LineString lineString = (LineString)geom;
-									featureLength = lineString.getLength();
-								}
-								featureWidthInPixels = scriptRunner.getFeatureWidth(featureLength);
-							} catch (ScriptException e) {
-								throw new ProcessException(e);
-							}
-						}
-						
-						double baseOffsetMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, stackOffsetInPixels);
-						double featureWidthInMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, featureWidthInPixels);
-						double offsetMapUnits = calculateOffsetInMapUnits(baseOffsetMapUnits, featureWidthInMapUnits,  drawOnBothSides);
-						
-						/*
-						if (aggCount>2) {
-							LOGGER.info(
-									"aggCount: "+aggCount
-									+"; spacingBetweenStackEntries:"+(double)spacingBetweenStackEntries
-									+"; maxLineWidth: "+maxLineWidth
-									+"; minLineWidth: "+minLineWidth
-									+"; featureWidthInPixels: "+featureWidthInPixels+"px"
-									+"; featureWidthInMapUnits: "+featureWidthInMapUnits
-									+"; stackOffsetInPixels: "+stackOffsetInPixels
-									+"; offsetMapUnits: "+offsetMapUnits
-									+"; klasse_color: "+feature.getAttribute("klasse_color").toString()
-									);
-						}
-						*/
-						
-						stackOffsetInPixels = addDrawableLines(outputCollection, featureBuilder, feature, 
-								outputSchema, offsetMapUnits, featureWidthInPixels, stackOffsetInPixels, spacingBetweenStackEntries,
-								drawOnBothSides, invertSidesAttributeName, WIDTH_ATTRIBUTE_NAME);
-						
-					} catch (IllegalArgumentException e) {
-						// possible cause: JTS: Invalid number of points in LineString (found 1 - must be 0 or >= 2)
-						LOGGER.warning("Ignoring possible illegal feature: " + e.getMessage());
-					}
-				}
 			}
 			
 			monitor.complete();
