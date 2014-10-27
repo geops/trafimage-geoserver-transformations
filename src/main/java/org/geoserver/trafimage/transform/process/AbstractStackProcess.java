@@ -167,7 +167,7 @@ abstract class AbstractStackProcess extends VectorProcess {
 	 * @param invertSidesAttributeName
 	 * @return
 	 */
-	private double getInversionValue(SimpleFeature feature, String invertSidesAttributeName) {
+	protected double getInversionValue(SimpleFeature feature, String invertSidesAttributeName) {
 		if (SimpleFeatureHelper.getBooleanValue(feature, invertSidesAttributeName, false)) {
 			return -1.0;
 		}

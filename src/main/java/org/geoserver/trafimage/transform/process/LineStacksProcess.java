@@ -180,7 +180,7 @@ public class LineStacksProcess extends AbstractStackProcess implements GeoServer
                 comparator.setOrderAttributeName(orderAttributeName);
                 for (List<SimpleFeature> stackFeatures: stacks.values()) {
                     Collections.sort(stackFeatures, comparator);
-                    double stackOffsetInPixels = (double)spacingBetweenStackEntries;
+                    HashMap<Double, Double> stackOffsetInPixels = new HashMap<Double, Double>();
                     for(final SimpleFeature feature: stackFeatures) {
                         try {		
                             // find the width of the line
@@ -198,8 +198,12 @@ public class LineStacksProcess extends AbstractStackProcess implements GeoServer
                                     throw new ProcessException(e);
                                 }
                             }
+
+                            double inversionValue = getInversionValue(feature, invertSidesAttributeName);
+                            double stackOffsetInPixelsSide = stackOffsetInPixels.containsKey(inversionValue) ?
+                                    stackOffsetInPixels.get(inversionValue) : (double)spacingBetweenStackEntries;
                             
-                            double baseOffsetMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, stackOffsetInPixels);
+                            double baseOffsetMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, stackOffsetInPixelsSide);
                             double featureWidthInMapUnits = MapUnits.pixelDistanceToMapUnits(outputEnv, outputWidth, outputHeight, featureWidthInPixels);
                             double offsetMapUnits = calculateOffsetInMapUnits(baseOffsetMapUnits, featureWidthInMapUnits,  drawOnBothSides);
                             
@@ -218,10 +222,12 @@ public class LineStacksProcess extends AbstractStackProcess implements GeoServer
                                         );
                             }
                             */
-                            
-                            stackOffsetInPixels = addDrawableLines(outputCollection, featureBuilder, feature, 
-                                    outputSchema, offsetMapUnits, featureWidthInPixels, stackOffsetInPixels, spacingBetweenStackEntries,
+
+                            stackOffsetInPixelsSide = addDrawableLines(outputCollection, featureBuilder, feature,
+                                    outputSchema, offsetMapUnits, featureWidthInPixels, stackOffsetInPixelsSide, spacingBetweenStackEntries,
                                     drawOnBothSides, invertSidesAttributeName, WIDTH_ATTRIBUTE_NAME);
+
+                            stackOffsetInPixels.put(inversionValue, stackOffsetInPixelsSide);
                             
                         } catch (IllegalArgumentException e) {
                             // possible cause: JTS: Invalid number of points in LineString (found 1 - must be 0 or >= 2)
