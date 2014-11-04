@@ -40,12 +40,17 @@ abstract class VectorProcess implements GeoServerProcess {
 		}
 		if (!isValid) {
 			StringBuilder messageBuilder = new StringBuilder()
-				.append("Inputgeometries are not of one of these valid types: ");
+				.append("Inputgeometries are of type <")
+				.append(geomBinding.getName())
+				.append("> and not of one of these valid types: ");
 			for(int i=0; i<validBindings.size(); i++) {
 				if (i>0) {
 					messageBuilder.append(", ");
 				}
-				messageBuilder.append(validBindings.get(i).getName());
+				messageBuilder
+					.append("<")
+					.append(validBindings.get(i).getName())
+					.append(">");
 			}
 			throw new ProcessException(messageBuilder.toString());
 		}
