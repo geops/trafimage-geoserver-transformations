@@ -224,4 +224,4 @@ Changes to the projects `pom.xml` file require a new run of `mvn eclipse:eclipse
 
 ## Version information
 
-Tha Jars build usiing `make` contain the git commit hash of the source. This can be viewed by opening the file `trafimage-geoserver-transformations.gitversion` bundled in the JAR.
+The Jars build using `make` contain the git commit hash of the source. This can be viewed by opening the file `trafimage-geoserver-transformations.gitversion` bundled in the JAR.
