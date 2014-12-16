@@ -1,3 +1,9 @@
+/* Copyright (c) 2014 geOps - www.geops.de. All rights reserved.
+ *
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
+
 /**
  * Reading material:
  *   http://wiki.deegree.org/deegreeWiki/HowToUseScaleHintAndScaleDenominator#What_is_the_ScaleHint.3F

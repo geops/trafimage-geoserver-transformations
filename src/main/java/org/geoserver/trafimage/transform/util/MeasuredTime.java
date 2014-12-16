@@ -1,3 +1,8 @@
+/* Copyright (c) 2014 geOps - www.geops.de. All rights reserved.
+ *
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.trafimage.transform.util;
 
 abstract public class MeasuredTime {
