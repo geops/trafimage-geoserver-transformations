@@ -175,11 +175,11 @@
 	</dependencies>
 
 	<issueManagement>
-		<url>http://tickets.trafimage.geops.ch/issues/14080071</url>
+		<url>https://github.com/geops/trafimage-geoserver-transformations/issues</url>
 	</issueManagement>
 	<artifactId>trafimage-geoserver-transformations</artifactId>
 	<scm>
-		<url>https://webgit.geops.de/trafimage-geoserver-transformations.git</url>
+		<url>https://github.com/geops/trafimage-geoserver-transformations.git</url>
 	</scm>
 	<organization>
 		<name>geOps</name>
