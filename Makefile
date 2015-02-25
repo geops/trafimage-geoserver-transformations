@@ -21,3 +21,6 @@ git-version:
 clean:
 	rm -f $(GITVERSION_FILE) src/main/resources/README.trafimage-geoserver-transformations.md
 	$(MVN) clean
+
+eclipse:
+	$(MVN) eclipse:eclipse
